@@ -1,0 +1,654 @@
+import React, { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useDesignSystemContext } from '../components/common/DesignSystemProvider'
+import { AutoStyledButton, AutoStyledInput, AutoStyledCard } from '../components/common/AutoStyledComponent'
+import Button from '../components/common/Button'
+import PromptBubble from '../components/common/PromptBubble'
+import AppLayout from '../components/layout/AppLayout'
+import styles from '../styles/pages/TranslationEditorPage.module.css'
+import googleSheetsService from '../services/googleSheetsService'
+
+const TranslationEditorPage = () => {
+  const { designTokens } = useDesignSystemContext()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const taskData = location.state || {}
+  const [activeTab, setActiveTab] = useState('original') // 'original' or 'translation'
+  const [prompts, setPrompts] = useState([]) // 프롬프트 버블들을 저장
+  const [promptInput, setPromptInput] = useState('') // 하단 프롬프트 입력 필드
+  const [promptCounter, setPromptCounter] = useState(1) // 버전 번호 카운터
+  
+  // Step 1 관련 state
+  const [originalText, setOriginalText] = useState('') // 원문 텍스트
+  const [translatedText, setTranslatedText] = useState('') // 번역된 텍스트
+  const [isLoading, setIsLoading] = useState(false) // 로딩 상태
+  const [step1Data, setStep1Data] = useState(null) // Step 1 데이터
+
+  // 과제 정보가 없으면 기본값 사용
+  const {
+    title = '미필적 고의에 의한 연애사',
+    episode = '01',
+    languagePair = '한국어 일본어',
+    status = '진행중'
+  } = taskData
+
+  // 나가기 버튼 클릭 시 나의 과제 페이지로 이동
+  const handleExit = () => {
+    navigate('/my-tasks')
+  }
+
+  // 임시 저장 버튼 클릭 시
+  const handleTemporarySave = () => {
+    // TODO: 임시 저장 로직 구현
+    console.log('임시 저장')
+  }
+
+  // 좋아요 결과물 코맨트 작성 버튼 클릭 시
+  const handleSubmit = () => {
+    // TODO: 제출 로직 구현
+    console.log('좋아요 결과물 코맨트 작성')
+  }
+
+  // 프롬프트 입력 처리
+  const handlePromptSubmit = (e) => {
+    if (e.key === 'Enter' && promptInput.trim()) {
+      e.preventDefault()
+      const newPrompt = {
+        id: Date.now(),
+        text: promptInput.trim(),
+        timestamp: new Date(),
+        version: `V${promptCounter}`,
+        status: 'default' // 'default', 'liked', 'disliked'
+      }
+      setPrompts([...prompts, newPrompt])
+      setPromptInput('')
+      setPromptCounter(prev => prev + 1)
+    }
+  }
+
+  // 프롬프트 삭제
+  const handleDeletePrompt = (promptId) => {
+    setPrompts(prompts.filter(p => p.id !== promptId))
+  }
+
+  // 프롬프트 좋아요 처리
+  const handleLikePrompt = (promptId) => {
+    setPrompts(prompts.map(p => 
+      p.id === promptId 
+        ? { ...p, status: p.status === 'liked' ? 'default' : 'liked' }
+        : p
+    ))
+  }
+
+  // 프롬프트 싫어요 처리
+  const handleDislikePrompt = (promptId) => {
+    setPrompts(prompts.map(p => 
+      p.id === promptId 
+        ? { ...p, status: p.status === 'disliked' ? 'default' : 'disliked' }
+        : p
+    ))
+  }
+
+  // 프롬프트 복사 처리
+  const handleCopyPrompt = (promptText) => {
+    navigator.clipboard.writeText(promptText)
+    // TODO: 복사 완료 알림 표시
+  }
+
+  // Step 1 실행: 구글 스프레드시트에서 데이터 가져와서 원문과 번역 생성
+  const executeStep1 = async () => {
+    try {
+      setIsLoading(true)
+      
+      // TODO: 실제 스프레드시트 ID와 범위 설정
+      const spreadsheetId = 'your-spreadsheet-id' // 실제 스프레드시트 ID로 변경 필요
+      const range = 'Sheet1!A:B' // A열: 원본 웹소설 링크, B열: 설정집 링크
+      
+      // 스프레드시트에서 데이터 가져오기
+      const sheetData = await googleSheetsService.getSheetData(spreadsheetId, range)
+      
+      if (sheetData && sheetData.length > 1) {
+        const webNovelUrl = sheetData[1][0] // 첫 번째 행은 헤더, 두 번째 행부터 데이터
+        const settingsUrl = sheetData[1][1]
+        
+        // 웹소설 원문 가져오기
+        const originalContent = await googleSheetsService.getWebNovelContent(webNovelUrl)
+        setOriginalText(originalContent)
+        
+        // AI 번역 생성
+        const translation = await googleSheetsService.generateTranslation(originalContent, settingsUrl)
+        setTranslatedText(translation)
+        
+        // Step 1 데이터 저장
+        setStep1Data({
+          webNovelUrl,
+          settingsUrl,
+          originalContent,
+          translation
+        })
+        
+        console.log('Step 1 완료:', { webNovelUrl, settingsUrl })
+      } else {
+        throw new Error('스프레드시트에서 데이터를 찾을 수 없습니다.')
+      }
+    } catch (error) {
+      console.error('Step 1 실행 실패:', error)
+      // 에러 처리: 사용자에게 알림
+      alert(`Step 1 실행 실패: ${error.message}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Step 1 데이터 초기화
+  const resetStep1 = () => {
+    setOriginalText('')
+    setTranslatedText('')
+    setStep1Data(null)
+  }
+
+  return (
+    <AppLayout currentPage="프롬프트 입력" variant="withoutHeader">
+      <div style={{ 
+        padding: '0', 
+        minWidth: '1400px',
+        minHeight: '600px',
+        maxWidth: '100%',
+        maxHeight: 'calc(100vh - 80px - 48px)',
+        width: '100%',
+        height: 'calc(100vh - 80px - 48px)',
+        margin: '0',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
+        {/* 상단 네비게이션 */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px', 
+          marginBottom: '24px',
+          padding: '24px 24px 0 24px', // 상단과 좌우 패딩만 유지
+          fontSize: designTokens.typography.fontSize.sm,
+          color: designTokens.colors.text.muted
+        }}>
+          <span>나의 과제</span>
+          <span style={{ color: designTokens.colors.border.primary }}>&gt;</span>
+          <span style={{ 
+            color: designTokens.colors.text.primary, 
+            fontWeight: designTokens.typography.fontWeight.medium 
+          }}>
+            프롬프트 입력
+          </span>
+          <div style={{
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            backgroundColor: designTokens.colors.info,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            cursor: 'pointer'
+          }}>
+            ?
+          </div>
+        </div>
+
+        {/* 과제 정보 바 */}
+        <div style={{
+          display: 'flex',
+          gap: '16px', // 콘텐츠 영역과 동일한 간격
+          marginBottom: '32px',
+          padding: '0 24px' // 좌우 패딩을 24px로 통일
+        }}>
+          {/* 첫 번째 콘텐츠 영역과 동일한 넓이의 왼쪽 영역 */}
+          <div style={{
+            flex: 2, // 첫 번째 콘텐츠 영역과 동일한 비율
+            display: 'flex',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: designTokens.colors.primary,
+              color: 'white',
+              borderRadius: designTokens.borders.radius.full,
+              fontSize: designTokens.typography.fontSize.sm,
+              fontWeight: designTokens.typography.fontWeight.medium
+            }}>
+              과제 시즌 1
+            </div>
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: designTokens.colors.background.secondary,
+              color: designTokens.colors.text.muted,
+              borderRadius: designTokens.borders.radius.full,
+              fontSize: designTokens.typography.fontSize.sm,
+              border: `1px solid ${designTokens.colors.border.light}`
+            }}>
+              언어 페어: {languagePair}
+            </div>
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: designTokens.colors.background.secondary,
+              color: designTokens.colors.text.muted,
+              borderRadius: designTokens.borders.radius.full,
+              fontSize: designTokens.typography.fontSize.sm,
+              border: `1px solid ${designTokens.colors.border.light}`
+            }}>
+              Title: {title}
+            </div>
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: designTokens.colors.background.secondary,
+              color: designTokens.colors.text.muted,
+              borderRadius: designTokens.borders.radius.full,
+              fontSize: designTokens.typography.fontSize.sm,
+              border: `1px solid ${designTokens.colors.border.light}`
+            }}>
+              EP: {episode}
+            </div>
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: designTokens.colors.background.secondary,
+              color: designTokens.colors.text.muted,
+              borderRadius: designTokens.borders.radius.full,
+              fontSize: designTokens.typography.fontSize.sm,
+              border: `1px solid ${designTokens.colors.border.light}`
+            }}>
+              상태: {status}
+            </div>
+          </div>
+        
+        {/* 메인 콘텐츠 영역 - 세로 2분할 */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '16px', // 헤더 영역과 동일한 간격
+          flex: 1,
+          minHeight: 0, // flexbox에서 스크롤이 제대로 작동하도록
+          padding: '0 24px', // 좌우 패딩을 24px로 통일
+          height: 'calc(100vh - 80px - 8px)', // 화면 높이 제한으로 전체 스크롤 방지
+          overflow: 'hidden' // 전체 스크롤 방지
+        }}>
+          {/* 첫 번째 콘텐츠 영역: 기본 번역문, 원문, 프롬프트 결과 번역문을 가로로 배치 */}
+          <div style={{ 
+            flex: 2, // 2/3 비율
+            display: 'flex', 
+            gap: '16px',
+            minWidth: 0, // flexbox에서 스크롤이 제대로 작동하도록
+            padding: '16px', // 첫 번째 영역 패딩
+            backgroundColor: 'rgba(0, 0, 0, 0.02)', // 구분을 위한 배경색
+            borderRadius: '12px', // 둥근 테두리
+            border: '1px solid rgba(0, 0, 0, 0.1)' // 테두리
+          }}>
+            {/* 기본 번역문과 원문을 토글 버튼 그룹으로 */}
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '16px',
+              minWidth: 0, // flexbox에서 스크롤이 제대로 작동하도록
+              height: '100%' // 전체 높이 사용
+            }}>
+              {/* 토글 버튼 그룹 */}
+              <div style={{
+                display: 'flex',
+                backgroundColor: designTokens.colors.background.secondary,
+                borderRadius: designTokens.borders.radius.md,
+                padding: '4px',
+                border: `1px solid ${designTokens.colors.border.light}`,
+                flexShrink: 0 // 축소되지 않도록 고정
+              }}>
+                <button
+                  onClick={() => setActiveTab('translation')}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    backgroundColor: activeTab === 'translation' 
+                      ? designTokens.colors.background.primary 
+                      : 'transparent',
+                    color: activeTab === 'translation' 
+                      ? designTokens.colors.text.primary 
+                      : designTokens.colors.text.muted,
+                    border: 'none',
+                    borderRadius: designTokens.borders.radius.sm,
+                    fontSize: designTokens.typography.fontSize.sm,
+                    fontWeight: designTokens.typography.fontWeight.medium,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  기본 번역문
+                </button>
+                <button
+                  onClick={() => setActiveTab('original')}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    backgroundColor: activeTab === 'original' 
+                      ? designTokens.colors.background.primary 
+                      : 'transparent',
+                    color: activeTab === 'original' 
+                      ? designTokens.colors.text.primary 
+                      : designTokens.colors.text.muted,
+                    border: 'none',
+                    borderRadius: designTokens.borders.radius.sm,
+                    fontSize: designTokens.typography.fontSize.sm,
+                    fontWeight: designTokens.typography.fontWeight.medium,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  원문
+                </button>
+              </div>
+
+              {/* 토글에 따른 텍스트 영역 */}
+              <div style={{ 
+                flex: 1,
+                padding: '16px',
+                backgroundColor: 'white',
+                border: `1px solid ${designTokens.colors.border.light}`,
+                borderRadius: designTokens.borders.radius.md,
+                overflow: 'auto',
+                minHeight: 0 // flexbox에서 스크롤이 제대로 작동하도록
+              }}>
+                {activeTab === 'translation' ? (
+                  // 기본 번역문 표시
+                  <div style={{
+                    fontSize: designTokens.typography.fontSize.sm,
+                    lineHeight: designTokens.typography.lineHeight.normal,
+                    color: designTokens.colors.text.muted
+                  }}>
+                    {translatedText ? (
+                      translatedText
+                    ) : (
+                      step1Data ? 'Step 1을 실행하여 번역문을 생성해주세요.' : '기본 번역문이 여기에 표시됩니다.'
+                    )}
+                  </div>
+                ) : (
+                  // 원문 표시
+                  <div style={{
+                    fontSize: designTokens.typography.fontSize.sm,
+                    lineHeight: designTokens.typography.lineHeight.normal,
+                    color: designTokens.colors.text.muted
+                  }}>
+                    {originalText ? (
+                      originalText
+                    ) : (
+                      step1Data ? 'Step 1을 실행하여 원문을 가져와주세요.' : '원문이 여기에 표시됩니다.'
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 중앙 패널: 프롬프트 결과 번역문 - 왼쪽과 동일한 너비 */}
+            <div style={{ 
+              flex: 1, // flex: 1로 변경하여 왼쪽과 동일한 너비
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '16px',
+              minWidth: 0, // flexbox에서 스크롤이 제대로 작동하도록
+              height: '100%' // 전체 높이 사용
+            }}>
+              {/* 프롬프트 결과 번역문 헤더 - 토글 버튼과 동일한 스타일 */}
+              <div style={{
+                display: 'flex',
+                backgroundColor: designTokens.colors.background.primary, // 선택된 상태로 표시
+                borderRadius: designTokens.borders.radius.md,
+                padding: '12px 24px', // 토글 버튼과 동일한 패딩
+                border: `1px solid ${designTokens.colors.border.light}`,
+                flexShrink: 0, // 축소되지 않도록 고정
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{
+                  fontSize: designTokens.typography.fontSize.sm,
+                  fontWeight: designTokens.typography.fontWeight.medium,
+                  color: designTokens.colors.text.primary // 선택된 상태의 텍스트 색상
+                }}>
+                  프롬프트 결과 번역문
+                </span>
+              </div>
+              <div style={{ 
+                flex: 1,
+                padding: '16px',
+                backgroundColor: 'white',
+                border: `1px solid ${designTokens.colors.border.light}`,
+                borderRadius: designTokens.borders.radius.md,
+                overflow: 'auto',
+                minHeight: 0 // flexbox에서 스크롤이 제대로 작동하도록
+              }}>
+                <div style={{
+                  fontSize: designTokens.typography.fontSize.sm,
+                  lineHeight: designTokens.typography.lineHeight.normal,
+                  color: designTokens.colors.text.muted
+                }}>
+                  {Array(30).fill('boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText boxText').join(' ')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 두 번째 콘텐츠 영역: 프롬프트 입력 - 별도 분할 영역 */}
+          <div style={{ 
+            flex: 1, // 1/3 비율
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '16px',
+            minWidth: 0, // flexbox에서 스크롤이 제대로 작동하도록
+            height: '100%', // 전체 높이 사용
+            backgroundColor: 'white', // 흰색 배경으로 변경
+            padding: '16px', // 1번 콘텐츠 영역과 동일한 패딩
+            borderRadius: '12px', // 1번 콘텐츠 영역과 동일한 둥근 테두리
+            border: '1px solid rgba(0, 0, 0, 0.1)', // 1번 콘텐츠 영역과 동일한 테두리
+            position: 'relative' // 위치 설정
+          }}>
+            {/* 프롬프트 입력 헤더 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '16px',
+              flexShrink: 0 // 축소되지 않도록 고정
+            }}>
+              <span style={{
+                fontSize: designTokens.typography.fontSize.sm,
+                fontWeight: designTokens.typography.fontWeight.medium,
+                color: designTokens.colors.text.primary
+              }}>
+                프롬프트 입력
+              </span>
+              <div style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                backgroundColor: designTokens.colors.info,
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}>
+                ?
+              </div>
+            </div>
+
+            {/* 프롬프트 버블 표시 영역 - 세로로 전체 공간 채움 */}
+            <div style={{
+              flex: 1, // 남은 공간을 모두 차지
+              padding: '16px',
+              backgroundColor: 'white',
+              border: `1px solid ${designTokens.colors.border.light}`,
+              borderRadius: designTokens.borders.radius.md,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0, // flexbox에서 스크롤이 제대로 작동하도록
+              overflow: 'auto', // 스크롤 가능하도록
+              height: '100%' // 높이를 100%로 설정하여 공간을 꽉 채움
+            }}>
+              {prompts.length === 0 ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: designTokens.colors.text.muted,
+                  fontSize: designTokens.typography.fontSize.sm
+                }}>
+                  프롬프트를 입력해 주세요.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {prompts.map((prompt) => (
+                    <PromptBubble
+                      key={prompt.id}
+                      version={prompt.version}
+                      promptText={prompt.text}
+                      timestamp={prompt.timestamp}
+                      status={prompt.status}
+                      onLike={() => handleLikePrompt(prompt.id)}
+                      onDislike={() => handleDislikePrompt(prompt.id)}
+                      onCopy={() => handleCopyPrompt(prompt.text)}
+                      onDelete={() => handleDeletePrompt(prompt.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 기본 번역문 교정 프롬프트 입력 필드 */}
+            <div style={{ flexShrink: 0 }}> {/* 축소되지 않도록 고정 */}
+
+
+              <div style={{
+                padding: '16px',
+                backgroundColor: 'white',
+                border: `1px solid ${designTokens.colors.border.light}`,
+                borderRadius: designTokens.borders.radius.md,
+                height: '120px', // 높이를 늘려서 공간을 더 활용
+                position: 'relative' // 입력 버튼 위치 기준
+              }}>
+                <textarea
+                  className="text-input-common"
+                  placeholder="기본 번역문 교정을 위한 프롬프트를 입력해 주세요."
+                  value={promptInput}
+                  onChange={(e) => setPromptInput(e.target.value)}
+                  onKeyPress={handlePromptSubmit}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    fontSize: designTokens.typography.fontSize.sm,
+                    paddingRight: '32px', // 입력 버튼 공간을 더 줄여서 더 많은 텍스트 입력 가능
+                    paddingBottom: '40px' // 하단 스크롤 영역이 버튼에 가리지 않도록
+                  }}
+                />
+                
+                {/* 입력 버튼 - 오른쪽 하단에 더 붙여서 배치 */}
+                <button
+                  onClick={() => {
+                    if (promptInput.trim()) {
+                      const newPrompt = {
+                        id: Date.now(),
+                        text: promptInput.trim(),
+                        timestamp: new Date(),
+                        version: `V${promptCounter}`,
+                        status: 'default'
+                      }
+                      setPrompts([...prompts, newPrompt])
+                      setPromptInput('')
+                      setPromptCounter(prev => prev + 1)
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '8px', // 더 아래쪽으로
+                    right: '8px', // 더 오른쪽으로
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: designTokens.colors.primary,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = designTokens.colors.primaryDark || '#1e40af'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = designTokens.colors.primary
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 고정 액션 버튼들 */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'white',
+          borderTop: `1px solid ${designTokens.colors.border.light}`,
+          padding: '16px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          zIndex: 9999,
+          boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* 왼쪽 버튼들 */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <AutoStyledButton 
+              variant="secondary" 
+              size="md"
+              onClick={handleExit}
+            >
+              나가기
+            </AutoStyledButton>
+            <AutoStyledButton 
+              variant="secondary" 
+              size="md"
+              onClick={handleTemporarySave}
+            >
+              임시 저장
+            </AutoStyledButton>
+          </div>
+
+          {/* 오른쪽 버튼 */}
+          <Button
+            variant="blue"
+            size="medium"
+            style="solid"
+            onClick={handleSubmit}
+            rightIcon={
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            }
+          >
+            좋아요 결과물 코맨트 작성
+          </Button>
+        </div>
+
+
+      </div>
+    </AppLayout>
+  )
+}
+
+export default TranslationEditorPage

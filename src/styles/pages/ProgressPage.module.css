@@ -1,0 +1,394 @@
+.container {
+  padding: 40px;
+  width: 100%; /* 전체 너비 사용 */
+  max-width: none; /* 최대 너비 제한 해제 */
+  margin: 0; /* 중앙 정렬 해제 */
+  font-family: var(--font-sans);
+  height: 100vh; /* 화면 높이에 고정 */
+  overflow: hidden; /* 스크롤 차단 */
+  display: flex;
+  flex-direction: column; /* 세로 배치 */
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+}
+
+/* 헤더 */
+.header {
+  margin-bottom: 40px;
+  flex-shrink: 0; /* 헤더가 축소되지 않도록 */
+}
+
+/* 스크롤 가능한 콘텐츠 영역 */
+.scrollableContent {
+  flex: 1; /* 남은 공간 모두 차지 */
+  overflow-y: auto; /* 세로 스크롤만 허용 */
+  overflow-x: hidden;
+  padding-right: 8px; /* 스크롤바 공간 */
+  min-height: 0; /* flex 아이템이 축소될 수 있도록 */
+}
+
+.title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.subtitle {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 로딩 및 에러 상태 */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: var(--error);
+  font-size: var(--text-lg);
+}
+
+/* 전체 진행률 요약 */
+.overallSummary {
+  margin-bottom: 40px;
+}
+
+.summaryCard {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 32px;
+  border: 1px solid var(--border-light);
+}
+
+.summaryTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.summaryStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.summaryLabel {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+}
+
+.summaryValue {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--primary);
+}
+
+/* 시즌별 카드 그리드 - 세로 배치로 변경 */
+.seasonGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.seasonCard {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-height: 120px;
+}
+
+.seasonCard:hover:not(.disabled) {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.seasonCard.disabled {
+  opacity: 0.6;
+  background-color: var(--background-secondary);
+}
+
+/* 시즌 헤더 - 가로 레이아웃용 */
+.seasonHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.seasonTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comingSoon {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  background-color: var(--background-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.seasonProgress {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.progressText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.progressPercentage {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--primary);
+}
+
+/* 진행률 바 - 가로 레이아웃용 */
+.progressBar {
+  flex: 1;
+  height: 12px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 0 16px;
+}
+
+.progressFill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: var(--radius-full);
+}
+
+/* 시즌 통계 - 가로 레이아웃용 */
+.seasonStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-md);
+  min-width: 80px;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.statValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.statValue.completed {
+  color: #10b981; /* green-500 */
+}
+
+.statValue.inProgress {
+  color: #3b82f6; /* blue-500 */
+}
+
+.statValue.waiting {
+  color: #f59e0b; /* amber-500 */
+}
+
+.statValue.locked {
+  color: var(--text-secondary);
+}
+
+/* 시즌 상태 - 가로 레이아웃용 */
+.seasonStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.statusComplete {
+  color: #10b981;
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+}
+
+.statusActive {
+  color: #3b82f6;
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+}
+
+.statusLocked {
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+}
+
+/* 도움말 섹션 */
+.helpSection {
+  margin-top: 40px;
+}
+
+.helpCard {
+  background-color: #f8fafc; /* slate-50 */
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.helpTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.helpList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.helpList li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.helpList li:before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .container {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+  
+  .header {
+    margin-bottom: 24px; /* 모바일에서 헤더 간격 축소 */
+  }
+  
+  .seasonGrid {
+    gap: 16px;
+  }
+  
+  .seasonCard {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    min-height: auto;
+  }
+  
+  .seasonHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    min-width: auto;
+  }
+  
+  .progressBar {
+    margin: 0;
+    flex: none;
+  }
+  
+  .seasonStats {
+    min-width: auto;
+    justify-content: space-between;
+  }
+  
+  .seasonStatus {
+    min-width: auto;
+    justify-content: center;
+  }
+  
+  .summaryStats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+}

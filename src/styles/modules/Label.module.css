@@ -1,0 +1,100 @@
+/* Label 컴포넌트 스타일 */
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: var(--spacing-2);
+}
+
+/* Size variants */
+.small {
+  font-size: var(--font-size-xs);
+}
+
+.medium {
+  font-size: var(--font-size-sm);
+}
+
+.large {
+  font-size: var(--font-size-base);
+}
+
+/* Text content */
+.text {
+  line-height: var(--line-height-tight);
+}
+
+/* Required mark */
+.requiredMark {
+  color: var(--text-error);
+  font-weight: var(--font-weight-semibold);
+  margin-left: var(--spacing-1);
+}
+
+/* Optional mark */
+.optionalMark {
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-normal);
+  font-size: 0.9em;
+  margin-left: var(--spacing-1);
+}
+
+/* States */
+.required .text {
+  color: var(--text-primary);
+}
+
+.optional .text {
+  color: var(--text-primary);
+}
+
+/* Hover state */
+.label:hover {
+  color: var(--text-primary);
+}
+
+.label:hover .optionalMark {
+  color: var(--text-secondary);
+}
+
+/* Focus state (when associated input is focused) */
+.label:focus-within {
+  color: var(--text-primary);
+}
+
+/* Dark theme support */
+[data-theme='dark'] .label {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .optionalMark {
+  color: var(--text-tertiary);
+}
+
+[data-theme='dark'] .label:hover .optionalMark {
+  color: var(--text-secondary);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .label {
+    font-weight: var(--font-weight-semibold);
+  }
+  
+  .requiredMark {
+    font-size: 1.2em;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .label {
+    transition: none;
+  }
+}

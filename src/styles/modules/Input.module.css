@@ -1,0 +1,384 @@
+/* Input Component - Figma Design System */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-sans);
+}
+
+/* ===== LABEL STYLES ===== */
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--fg-primary);
+  line-height: var(--leading-tight);
+}
+
+.required {
+  color: var(--status-error);
+  font-weight: var(--font-bold);
+}
+
+.infoIcon {
+  display: flex;
+  align-items: center;
+  color: var(--fg-secondary);
+  cursor: help;
+}
+
+.infoIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== INPUT WRAPPER ===== */
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  transition: all 0.2s ease;
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== INPUT STYLES ===== */
+
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--fg-primary);
+  padding: 12px 16px;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: var(--fg-tertiary);
+}
+
+.input:disabled {
+  background-color: var(--bg-secondary);
+  color: var(--fg-disabled);
+  cursor: not-allowed;
+}
+
+.input:read-only {
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+}
+
+/* ===== SIZE STYLES ===== */
+
+.input.small {
+  padding: 8px 12px;
+  font-size: var(--text-xs);
+}
+
+.input.medium {
+  padding: 12px 16px;
+  font-size: var(--text-sm);
+}
+
+.input.large {
+  padding: 16px 20px;
+  font-size: var(--text-base);
+}
+
+/* ===== STATUS STYLES ===== */
+
+.inputWrapper.error {
+  border-color: var(--status-error);
+}
+
+.inputWrapper.error:focus-within {
+  border-color: var(--status-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.inputWrapper.success {
+  border-color: var(--status-success);
+}
+
+.inputWrapper.success:focus-within {
+  border-color: var(--status-success);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.inputWrapper.warning {
+  border-color: var(--status-warning);
+}
+
+.inputWrapper.warning:focus-within {
+  border-color: var(--status-warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.inputWrapper.info {
+  border-color: var(--status-info);
+}
+
+.inputWrapper.info:focus-within {
+  border-color: var(--status-info);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== ICON STYLES ===== */
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--fg-secondary);
+  flex-shrink: 0;
+}
+
+.iconLeft {
+  border-right: 1px solid var(--border-primary);
+}
+
+.iconRight {
+  border-left: 1px solid var(--border-primary);
+}
+
+.icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== ADDON STYLES ===== */
+
+.addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border-right: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.addonRight {
+  border-right: none;
+  border-left: 1px solid var(--border-primary);
+}
+
+/* ===== BUTTON STYLES ===== */
+
+.inputButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.inputButton:hover:not(:disabled) {
+  background-color: var(--brand-secondary);
+}
+
+.inputButton:disabled {
+  background-color: var(--fg-disabled);
+  cursor: not-allowed;
+}
+
+.inputButtonLeft {
+  border-right: 1px solid var(--border-primary);
+}
+
+.inputButtonRight {
+  border-left: 1px solid var(--border-primary);
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== DROPDOWN STYLES ===== */
+
+.dropdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdown:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+}
+
+.dropdown:disabled {
+  color: var(--fg-disabled);
+  cursor: not-allowed;
+}
+
+.dropdownLeft {
+  border-right: 1px solid var(--border-primary);
+}
+
+.dropdownRight {
+  border-left: 1px solid var(--border-primary);
+}
+
+.dropdownIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.chevronIcon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown:hover .chevronIcon {
+  transform: translateY(1px);
+}
+
+/* ===== CLEAR BUTTON ===== */
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+}
+
+.clearButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== STATUS ICON ===== */
+
+.statusIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.inputWrapper.error .statusIcon {
+  color: var(--status-error);
+}
+
+.inputWrapper.success .statusIcon {
+  color: var(--status-success);
+}
+
+.inputWrapper.warning .statusIcon {
+  color: var(--status-warning);
+}
+
+.inputWrapper.info .statusIcon {
+  color: var(--status-info);
+}
+
+/* ===== HELPER TEXT ===== */
+
+.helperText {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--fg-tertiary);
+}
+
+.helperText.error {
+  color: var(--status-error);
+}
+
+.helperText.success {
+  color: var(--status-success);
+}
+
+.helperText.warning {
+  color: var(--status-warning);
+}
+
+.helperText.info {
+  color: var(--status-info);
+}
+
+/* ===== FULL WIDTH ===== */
+
+.container.fullWidth {
+  width: 100%;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 640px) {
+  .input.small {
+    padding: 6px 10px;
+    font-size: var(--text-xs);
+  }
+  
+  .input.medium {
+    padding: 10px 14px;
+    font-size: var(--text-sm);
+  }
+  
+  .input.large {
+    padding: 14px 18px;
+    font-size: var(--text-sm);
+  }
+  
+  .icon, .addon, .inputButton, .dropdown {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}

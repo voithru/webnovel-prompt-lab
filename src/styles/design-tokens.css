@@ -1,0 +1,238 @@
+/* Design Tokens - 웹소설 MT 프롬프트 AI 애플리케이션 */
+
+:root {
+  /* ===== FONT FAMILY ===== */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans CJK KR', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+
+  /* ===== FONT SIZES ===== */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+
+  /* ===== FONT WEIGHTS ===== */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* ===== LINE HEIGHTS ===== */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* ===== SPACING ===== */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  /* ===== BORDER RADIUS ===== */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== BOX SHADOWS ===== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* ===== COLORS ===== */
+  
+  /* Border Colors (border- prefix) */
+  /* High contrast borders */
+  --border-dark: #4b5563; /* gray-600 */
+  --border-dark-subtle: #1f2937; /* gray-800 */
+  
+  /* Buffer borders (same as background) */
+  --border-buffer: #ffffff; /* white */
+  --border-buffer-medium: #ffffff; /* white */
+  --border-buffer-strong: #ffffff; /* white */
+  
+  /* Subtle borders */
+  --border-muted: #f9fafb; /* gray-50 */
+  --border-light-subtle: #f3f4f6; /* gray-100 */
+  --border-light: #f3f4f6; /* gray-100 */
+  --border-light-medium: #f3f4f6; /* gray-100 */
+  
+  /* Base borders (most commonly used) */
+  --border-base-soft: #e5e7eb; /* gray-200 */
+  --border-base: #e5e7eb; /* gray-200 */
+  --border-base-medium: #e5e7eb; /* gray-200 */
+  --border-base-strong: #e5e7eb; /* gray-200 */
+  
+  /* Status borders */
+  --border-success-subtle: #a7f3d0; /* emerald-200 */
+  --border-success: #047857; /* emerald-700 */
+  --border-danger-subtle: #fecdd3; /* rose-200 */
+  --border-danger: #be123c; /* rose-700 */
+  --border-warning-subtle: #fed7aa; /* orange-200 */
+  --border-warning: #ea580c; /* orange-600 */
+  --border-brand-subtle: #bfdbfe; /* blue-200 */
+  --border-brand-light: #2563eb; /* blue-600 */
+  --border-brand: #1d4ed8; /* blue-700 */
+  
+  /* Categorical borders */
+  --border-purple: #a855f7; /* purple-500 */
+  --border-orange: #fb923c; /* orange-400 */
+  
+  /* Legacy border names for compatibility */
+  --border-primary: #e5e7eb; /* gray-200 */
+  --border-secondary: #d1d5db; /* gray-300 */
+  --border-focus: #3b82f6; /* blue-500 */
+
+  /* Background Colors (bg- prefix) */
+  /* Primary & Neutral Grays */
+  --bg-white: #ffffff;
+  --bg-primary-soft: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-primary-medium: #ffffff;
+  --bg-primary-strong: #ffffff;
+  
+  --bg-secondary-soft: #f9fafb; /* gray-50 */
+  --bg-secondary: #f9fafb; /* gray-50 */
+  --bg-secondary-medium: #f9fafb; /* gray-50 */
+  --bg-secondary-strong: #f9fafb; /* gray-50 */
+  
+  --bg-tertiary-soft: #f3f4f6; /* gray-100 */
+  --bg-tertiary: #f3f4f6; /* gray-100 */
+  --bg-tertiary-medium: #f3f4f6; /* gray-100 */
+  
+  --bg-quaternary: #e5e7eb; /* gray-200 */
+  --bg-quaternary-medium: #e5e7eb; /* gray-200 */
+  --bg-gray: #d1d5db; /* gray-300 */
+  
+  /* Brand Blues */
+  --bg-brand-softer: #eff6ff; /* blue-50 */
+  --bg-brand-soft: #dbeafe; /* blue-100 */
+  --bg-brand-medium: #bfdbfe; /* blue-200 */
+  --bg-brand: #1d4ed8; /* blue-700 */
+  --bg-brand-strong: #1e40af; /* blue-800 */
+  
+  /* Status Colors */
+  --bg-success-soft: #ecfdf5; /* emerald-50 */
+  --bg-success-medium: #d1fae5; /* emerald-100 */
+  --bg-success: #047857; /* emerald-700 */
+  --bg-success-strong: #065f46; /* emerald-800 */
+  
+  --bg-danger-soft: #fef2f2; /* rose-50 */
+  --bg-danger-medium: #fecdd3; /* rose-100 */
+  --bg-danger: #be123c; /* rose-700 */
+  --bg-danger-strong: #9f1239; /* rose-800 */
+  
+  --bg-warning-soft: #fffbeb; /* orange-50 */
+  --bg-warning-medium: #fed7aa; /* orange-100 */
+  --bg-warning: #f97316; /* orange-500 */
+  --bg-warning-strong: #c2410c; /* orange-700 */
+  
+  /* Utility & Categorical Colors */
+  --bg-dark-strong: #111827; /* gray-900 */
+  --bg-dark: #1f2937; /* gray-800 */
+  --bg-disabled: #f3f4f6; /* gray-100 */
+  
+  --bg-purple: #a855f7; /* purple-500 */
+  --bg-sky: #0ea5e9; /* sky-500 */
+  --bg-teal: #0d9488; /* teal-600 */
+  --bg-pink: #db2777; /* pink-600 */
+  --bg-cyan: #06b6d4; /* cyan-500 */
+  --bg-fuchsia: #c026d3; /* fuchsia-600 */
+  --bg-indigo: #4f46e5; /* indigo-600 */
+  --bg-orange: #fb923c; /* orange-400 */
+  
+  /* Legacy background names for compatibility */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-elevated: #ffffff;
+
+  /* Foreground Colors (fg- prefix) */
+  /* Basic text colors */
+  --text-white: #ffffff;
+  --text-black: #111827; /* gray-900 */
+  --text-heading: #111827; /* gray-900 */
+  --text-body: #4b5563; /* gray-600 */
+  --text-body-subtle: #6b7280; /* gray-500 */
+  
+  /* Brand text colors */
+  --text-fg-brand-subtle: #bfdbfe; /* blue-200 */
+  --text-fg-brand: #1d4ed8; /* blue-700 */
+  --text-fg-brand-strong: #1e3a8a; /* blue-900 */
+  
+  /* Status text colors */
+  --text-fg-success: #047857; /* emerald-700 */
+  --text-fg-success-strong: #064e3b; /* emerald-900 */
+  --text-fg-danger: #be123c; /* rose-700 */
+  --text-fg-danger-strong: #881337; /* rose-900 */
+  --text-fg-warning-subtle: #ea580c; /* orange-600 */
+  --text-fg-warning: #c2410c; /* orange-900 */
+  --text-fg-yellow: #fbbf24; /* yellow-400 */
+  --text-fg-info: #1e3a8a; /* blue-900 */
+  
+  /* Utility text colors */
+  --text-fg-disabled: #9ca3af; /* gray-400 */
+  
+  /* Categorical text colors */
+  --text-fg-purple: #9333ea; /* purple-600 */
+  --text-fg-cyan: #0891b2; /* cyan-600 */
+  --text-fg-indigo: #4f46e5; /* indigo-600 */
+  --text-fg-pink: #db2777; /* pink-600 */
+  --text-fg-lime: #65a30d; /* lime-600 */
+  
+  /* Legacy foreground names for compatibility */
+  --fg-primary: #111827; /* gray-900 */
+  --fg-secondary: #6b7280; /* gray-600 */
+  --fg-tertiary: #9ca3af; /* gray-400 */
+  --fg-disabled: #d1d5db; /* gray-300 */
+
+  /* Brand Colors */
+  --brand-primary: #3b82f6; /* blue-500 */
+  --brand-secondary: #1d4ed8; /* blue-700 */
+  --brand-accent: #06b6d4; /* cyan-500 */
+
+  /* Status Colors */
+  --status-success: #10b981; /* emerald-500 */
+  --status-warning: #f59e0b; /* amber-500 */
+  --status-error: #ef4444; /* red-500 */
+  --status-info: #3b82f6; /* blue-500 */
+
+  /* Additional Colors for PromptReviewPage */
+  --primary: #3b82f6; /* blue-500 */
+  --success: #10b981; /* emerald-500 */
+  --warning: #f59e0b; /* amber-500 */
+  --error: #ef4444; /* red-500 */
+  --background-secondary: #f9fafb; /* gray-50 */
+  --text-primary: #111827; /* gray-900 */
+  --text-secondary: #6b7280; /* gray-500 */
+}
+
+/* 다크모드 지원 제거 - 항상 라이트모드 유지 */

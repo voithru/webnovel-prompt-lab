@@ -1,0 +1,454 @@
+/* 로그인 페이지 컨테이너 */
+.container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 배경 장식 요소 */
+.container::before,
+.container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  opacity: 0.1;
+}
+
+.container::before {
+  width: 300px;
+  height: 300px;
+  top: -150px;
+  left: -150px;
+}
+
+.container::after {
+  width: 200px;
+  height: 200px;
+  bottom: -100px;
+  right: -100px;
+}
+
+/* 로그인 카드 */
+.loginCard {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  padding: 48px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* 헤더 섹션 */
+.header {
+  margin-bottom: 40px;
+}
+
+.mainTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* 로그인 섹션 */
+.loginSection {
+  margin-bottom: 40px;
+}
+
+/* 사용자 정보 표시 */
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.profileImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.userDetails h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.userDetails p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 액션 버튼 */
+.actionButtons {
+  display: flex;
+  justify-content: center;
+}
+
+.logoutButton {
+  padding: 12px 24px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* 에러 메시지 */
+.errorMessage {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 성공 메시지 */
+.successMessage {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.retryButton {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #b91c1c;
+}
+
+/* 로그인 폼 스타일 */
+.loginForm {
+  text-align: left;
+  width: 100%;
+}
+
+.form {
+  text-align: left;
+}
+
+.inputGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.codeInput {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #1e293b;
+}
+
+.codeInput:focus {
+  outline: none;
+  border-bottom-color: #3b82f6;
+}
+
+.codeInput::placeholder {
+  color: #94a3b8;
+}
+
+/* 버튼 그룹 */
+.buttonGroup {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.buttonGroup.step2 {
+  justify-content: space-between;
+}
+
+/* 단계 정보 */
+.stepInfo {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.stepText {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  text-align: center;
+}
+
+.inputGroup .helpText {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* 로그인 버튼 */
+.loginButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primaryButton {
+  flex: 1;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondaryButton {
+  flex: 1;
+  padding: 16px 24px;
+  background: white;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 도움말 텍스트 */
+.helpText {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+.helpText {
+  margin-top: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.helpText p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* 링크 버튼 */
+.linkButton {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  margin: 0 4px;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+
+.linkButton:hover {
+  color: #2563eb;
+}
+
+/* 푸터 */
+.footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.terms {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 도움말 박스 */
+.helpBox {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.helpBox h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0 0 12px 0;
+}
+
+.helpBox ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #0c4a6e;
+}
+
+.helpBox li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.helpBox li:last-child {
+  margin-bottom: 0;
+}
+
+/* 브라우저 전용 메시지 */
+.browserMessage {
+  text-align: center;
+  padding: 32px 24px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin: 24px 0;
+}
+
+.browserMessage p {
+  margin: 8px 0;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.browserMessage p:first-child {
+  font-weight: 600;
+  color: #475569;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .loginCard {
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+  
+  .mainTitle {
+    font-size: 28px;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
+  }
+  
+  .userInfo {
+    padding: 20px;
+  }
+  
+  .profileImage {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* 다크모드 지원 제거 - 항상 라이트모드 유지 */

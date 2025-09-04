@@ -1,0 +1,5 @@
+안내사항,B열,C열,D열,E열,F열,G열,H열,I열,J열
+컬럼명,series_title,episode,step,source_language,target_language,path_baseline_translation,path_series_settings,path_source,path_guide_prompt
+실제데이터,미필적 고의에 의한 연애사,1,1,한국어,일본어,https://example.com/baseline1,https://example.com/settings1,https://example.com/source1,https://example.com/prompt1
+실제데이터,미필적 고의에 의한 연애사,1,2,한국어,일본어,https://example.com/baseline2,https://example.com/settings1,https://example.com/source1,https://example.com/prompt1
+실제데이터,오달리스크,1,1,한국어,일본어,https://example.com/baseline3,https://example.com/settings2,https://example.com/source2,https://example.com/prompt2

@@ -1,0 +1,345 @@
+/* Button Component - Figma Design System */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.button:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== SIZE STYLES ===== */
+
+.button.large {
+  padding: 16px 24px;
+  font-size: var(--text-lg);
+  min-height: 56px;
+}
+
+.button.medium {
+  padding: 12px 20px;
+  font-size: var(--text-base);
+  min-height: 44px;
+}
+
+.button.small {
+  padding: 8px 16px;
+  font-size: var(--text-sm);
+  min-height: 36px;
+}
+
+/* ===== STYLE STYLES ===== */
+
+.button.solid {
+  /* Solid style - filled background */
+}
+
+.button.outline {
+  background-color: transparent;
+  border: 2px solid;
+}
+
+.button.ghost {
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+/* ===== VARIANT STYLES ===== */
+
+/* Blue Variant */
+.button.blue.solid {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button.blue.solid:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.button.blue.outline {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.button.blue.outline:hover:not(:disabled) {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button.blue.ghost {
+  color: #3b82f6;
+}
+
+.button.blue.ghost:hover:not(:disabled) {
+  background-color: #eff6ff;
+}
+
+/* White/Light Grey Variant */
+.button.white.solid {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.button.white.solid:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.button.white.outline {
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.button.white.outline:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.button.white.ghost {
+  color: #374151;
+}
+
+.button.white.ghost:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+/* Green Variant */
+.button.green.solid {
+  background-color: #10b981;
+  color: white;
+}
+
+.button.green.solid:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.button.green.outline {
+  color: #10b981;
+  border-color: #10b981;
+}
+
+.button.green.outline:hover:not(:disabled) {
+  background-color: #10b981;
+  color: white;
+}
+
+.button.green.ghost {
+  color: #10b981;
+}
+
+.button.green.ghost:hover:not(:disabled) {
+  background-color: #ecfdf5;
+}
+
+/* Red Variant */
+.button.red.solid {
+  background-color: #ef4444;
+  color: white;
+}
+
+.button.red.solid:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.button.red.outline {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.button.red.outline:hover:not(:disabled) {
+  background-color: #ef4444;
+  color: white;
+}
+
+.button.red.ghost {
+  color: #ef4444;
+}
+
+.button.red.ghost:hover:not(:disabled) {
+  background-color: #fef2f2;
+}
+
+/* Orange Variant */
+.button.orange.solid {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.button.orange.solid:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+.button.orange.outline {
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.button.orange.outline:hover:not(:disabled) {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.button.orange.ghost {
+  color: #f59e0b;
+}
+
+.button.orange.ghost:hover:not(:disabled) {
+  background-color: #fffbeb;
+}
+
+/* Brown/Dark Orange Variant */
+.button.brown.solid {
+  background-color: #92400e;
+  color: white;
+}
+
+.button.brown.solid:hover:not(:disabled) {
+  background-color: #78350f;
+}
+
+.button.brown.outline {
+  color: #92400e;
+  border-color: #92400e;
+}
+
+.button.brown.outline:hover:not(:disabled) {
+  background-color: #92400e;
+  color: white;
+}
+
+.button.brown.ghost {
+  color: #92400e;
+}
+
+.button.brown.ghost:hover:not(:disabled) {
+  background-color: #fef3c7;
+}
+
+/* ===== ICON STYLES ===== */
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconLeft {
+  margin-right: 4px;
+}
+
+.iconRight {
+  margin-left: 4px;
+}
+
+/* Icon sizing based on button size */
+.button.large .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.button.medium .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.button.small .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== TEXT STYLES ===== */
+
+.text {
+  font-weight: var(--font-medium);
+  line-height: 1;
+}
+
+/* ===== ICON ONLY BUTTONS ===== */
+
+.button.iconOnly {
+  padding: 0;
+  min-width: 44px;
+}
+
+.button.iconOnly.large {
+  min-width: 56px;
+  min-height: 56px;
+}
+
+.button.iconOnly.medium {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.button.iconOnly.small {
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.iconOnlyContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== FULL WIDTH ===== */
+
+.button.fullWidth {
+  width: 100%;
+}
+
+/* ===== DISABLED STATE ===== */
+
+.button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button.disabled:hover {
+  transform: none;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 640px) {
+  .button.large {
+    padding: 14px 20px;
+    font-size: var(--text-base);
+    min-height: 48px;
+  }
+  
+  .button.medium {
+    padding: 10px 16px;
+    font-size: var(--text-sm);
+    min-height: 40px;
+  }
+  
+  .button.small {
+    padding: 6px 12px;
+    font-size: var(--text-xs);
+    min-height: 32px;
+  }
+}

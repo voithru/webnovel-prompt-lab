@@ -1,0 +1,91 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+.npm
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.backup*
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+dist-electron/
+build/
+*.tgz
+
+# Electron
+app/
+release/
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Storybook build outputs
+storybook-static/
+
+# User data
+data/cache/*
+data/exports/*
+data/logs/*
+
+# Keep empty directories
+!data/cache/.gitkeep
+!data/exports/.gitkeep
+!data/logs/.gitkeep
+
+# Local configuration
+config/local.json
+
+# Local Netlify folder
+.netlify
+
+# Security - OAuth and API keys
+**/oauth-config.*

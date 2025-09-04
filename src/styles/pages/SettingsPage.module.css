@@ -1,0 +1,766 @@
+/* Settings Page Styles */
+
+.container {
+  height: 100vh; /* 화면 높이에 고정 */
+  background-color: var(--background-primary, #f8fafc);
+  padding: 24px;
+  overflow: hidden; /* 스크롤 차단 */
+  display: flex;
+  flex-direction: column; /* 세로 배치 */
+}
+
+.content {
+  width: 100%; /* 전체 너비 사용 */
+  max-width: none; /* 최대 너비 제한 해제 */
+  margin: 0;
+  flex: 1; /* 남은 공간 차지 */
+  overflow-y: auto; /* 내부 스크롤만 허용 */
+  overflow-x: hidden;
+  padding-right: 8px; /* 스크롤바 공간 */
+}
+
+/* 헤더 */
+.header {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+}
+
+/* 현재 설정 정보 */
+.currentSettings {
+  margin-bottom: 16px;
+}
+
+/* 캐시 설정 */
+.cacheSettings {
+  margin-bottom: 16px;
+}
+
+.cacheInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--background-info, #eff6ff);
+  border: 1px solid var(--border-info, #bfdbfe);
+  border-radius: 8px;
+}
+
+.cacheItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cacheLabel {
+  font-weight: 500;
+  color: var(--text-info, #1e40af);
+  min-width: 120px;
+  font-size: 14px;
+}
+
+.cacheValue {
+  color: var(--text-info, #1e40af);
+  font-size: 14px;
+}
+
+.cacheActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+
+
+.cacheMessage {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.cacheMessage.success {
+  background: var(--success-light, #dcfce7);
+  color: var(--success, #16a34a);
+  border: 1px solid var(--success-border, #bbf7d0);
+}
+
+.cacheMessage.error {
+  background: var(--error-light, #fef2f2);
+  color: var(--error, #dc2626);
+  border: 1px solid var(--error-border, #fecaca);
+}
+
+.cacheHelp {
+  background: var(--background-warning, #fffbeb);
+  border: 1px solid var(--border-warning, #fed7aa);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.cacheHelp h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-warning, #92400e);
+  margin: 0 0 12px 0;
+}
+
+.cacheHelp ul {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+  color: var(--text-warning, #92400e);
+}
+
+.cacheHelp li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.settingCard {
+  background: var(--bg-elevated, #ffffff);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.settingCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 모든 카드가 아코디언으로 변경되어 패딩 제거 */
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0 0 20px 0;
+}
+
+.settingItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.settingItem:last-child {
+  border-bottom: none;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--text-secondary, #6b7280);
+  font-style: italic;
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+  min-width: 140px;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.settingValue {
+  flex: 1;
+  text-align: right;
+  color: var(--text-secondary, #6b7280);
+}
+
+.languagePairs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.languagePair {
+  background: var(--primary-light, #dbeafe);
+  color: var(--primary, #3b82f6);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.noData {
+  color: var(--text-muted, #9ca3af);
+  font-style: italic;
+}
+
+/* 문의 안내 */
+.contactInfo {
+  margin-bottom: 16px;
+}
+
+.contactCard {
+  background: white;
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0);
+}
+
+.contactHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.contactIcon {
+  font-size: 24px;
+}
+
+.contactTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0;
+}
+
+.contactContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contactDescription {
+  font-size: 16px;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contactLabel {
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+  min-width: 80px;
+}
+
+.contactValue {
+  color: var(--text-secondary, #6b7280);
+}
+
+/* 안내사항 박스 */
+.noteBox {
+  background: var(--background-info, #eff6ff);
+  border: 1px solid var(--border-info, #bfdbfe);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.noteIcon {
+  font-size: 16px;
+}
+
+.noteTitle {
+  font-weight: 600;
+  color: var(--text-info, #1e40af);
+  font-size: 14px;
+}
+
+.noteList {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--text-info, #1e40af);
+}
+
+.noteList li {
+  margin-bottom: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.noteList li:last-child {
+  margin-bottom: 0;
+}
+
+/* 추가 정보 */
+.additionalInfo {
+  margin-bottom: 32px;
+}
+
+.infoCard {
+  background: var(--bg-elevated, #ffffff);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.infoTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0 0 12px 0;
+}
+
+.infoText {
+  font-size: 14px;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 위험 구역 */
+.dangerZone {
+  margin-bottom: 32px;
+}
+
+.dangerCard {
+  background: var(--bg-elevated, #ffffff);
+  border: 2px solid var(--error, #dc2626);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.1);
+}
+
+.dangerToggle {
+  width: 100%;
+  background: var(--error-light, #fef2f2);
+  border: none;
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.dangerToggle:hover {
+  background: var(--error-lighter, #fee2e2);
+}
+
+.dangerHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dangerIcon {
+  font-size: 20px;
+}
+
+.dangerTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--error, #dc2626);
+}
+
+.dangerSubtitle {
+  font-size: 12px;
+  color: var(--error-dark, #991b1b);
+  background: var(--error, #dc2626);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.dangerArrow {
+  font-size: 16px;
+  color: var(--error, #dc2626);
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.dangerContent {
+  padding: 20px;
+  background: white;
+  border-top: 1px solid var(--error-light, #fef2f2);
+}
+
+.dangerWarning {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dangerWarning h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--error, #dc2626);
+  margin: 0;
+}
+
+.dangerWarning p {
+  font-size: 14px;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dangerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--error-light, #fef2f2);
+  border: 1px solid var(--error-border, #fecaca);
+  border-radius: 8px;
+}
+
+.dangerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dangerLabel {
+  font-weight: 500;
+  color: var(--error-dark, #991b1b);
+  min-width: 100px;
+  font-size: 13px;
+}
+
+.dangerValue {
+  color: var(--error-dark, #991b1b);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dangerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fullResetButton {
+  padding: 12px 24px;
+  background: var(--error, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.fullResetButton:hover:not(:disabled) {
+  background: var(--error-dark, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.fullResetButton:disabled {
+  background: var(--text-muted, #9ca3af);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.fullResetMessage {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.fullResetMessage.success {
+  background: var(--success-light, #dcfce7);
+  color: var(--success, #16a34a);
+  border: 1px solid var(--success-border, #bbf7d0);
+}
+
+.fullResetMessage.error {
+  background: var(--error-light, #fef2f2);
+  color: var(--error, #dc2626);
+  border: 1px solid var(--error-border, #fecaca);
+}
+
+.dangerHelp {
+  background: var(--background-warning, #fffbeb);
+  border: 1px solid var(--border-warning, #fed7aa);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.dangerHelp h5 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-warning, #92400e);
+  margin: 0 0 12px 0;
+}
+
+.dangerHelp ul {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+  color: var(--text-warning, #92400e);
+}
+
+.dangerHelp li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.dangerNote {
+  font-size: 13px;
+  color: var(--text-warning, #92400e);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .settingItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .settingLabel {
+    min-width: auto;
+  }
+  
+  .settingValue {
+    text-align: left;
+  }
+  
+  .languagePairs {
+    justify-content: flex-start;
+    align-items: right;
+  }
+  
+  .contactItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .contactLabel {
+    min-width: auto;
+  }
+  
+  .dangerItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .dangerLabel {
+    min-width: auto;
+  }
+}
+
+/* 아코디언 스타일 - 이미지 참고하여 개선 */
+.accordionToggle {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.accordionToggle:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.accordionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 24px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.accordionHeader h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.accordionArrow {
+  color: #6b7280;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.accordionToggle:hover .accordionArrow {
+  color: #4f46e5;
+}
+
+.accordionContent {
+  padding: 24px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 캐시 버튼 그룹 스타일 */
+.cacheButtonGroup {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.cacheButtonGroup:last-of-type {
+  margin-bottom: 0;
+}
+
+.buttonDescription {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* 캐시 버튼 통일 스타일 */
+.cacheButton {
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cacheButton:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cacheButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 전체 리셋 버튼은 비활성화 상태에서도 빨간색 유지 */
+.cacheButtonGroup:last-of-type .cacheButton:disabled {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-color: #dc3545;
+  opacity: 0.6;
+  box-shadow: 0 1px 3px rgba(220, 53, 69, 0.1);
+}
+
+/* 전체 리셋 버튼만 위험 색상 적용 */
+.cacheButtonGroup:last-of-type .cacheButton {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-color: #dc3545;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.cacheButtonGroup:last-of-type .cacheButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333, #a71e2a);
+  border-color: #c82333;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* 스피너 애니메이션 */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(73, 80, 87, 0.3);
+  border-radius: 50%;
+  border-top-color: #495057;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* 전체 리셋 버튼의 스피너는 흰색 */
+.cacheButtonGroup:last-of-type .spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+

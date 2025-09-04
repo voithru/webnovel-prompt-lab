@@ -1,0 +1,157 @@
+/* 앱 전체 컨테이너 */
+.appContainer {
+  height: 100vh; /* 화면 높이에 고정 */
+  background-color: #f8fafc;
+  overflow: hidden; /* 스크롤 완전 차단 */
+}
+
+/* 상단 고정 헤더 */
+.topHeader {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width, 288px); /* CSS 변수 사용, 기본값 288px */
+  right: 0;
+  height: 64px;
+  background-color: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  transition: left 0.3s ease; /* 부드러운 전환 효과 추가 */
+}
+
+.headerContent {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.separator {
+  color: #cbd5e1;
+}
+
+.currentPage {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notificationButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notificationButton:hover {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.userName {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* 메인 레이아웃 */
+.mainLayout {
+  display: flex;
+  height: 100vh; /* 화면 높이에 고정 */
+  position: relative; /* 사이드바 위치 기준점 */
+  overflow: hidden; /* 스크롤 완전 차단 */
+}
+
+/* 사이드바 스타일 */
+.mainLayout > :first-child {
+  flex-shrink: 0; /* 사이드바가 축소되지 않도록 */
+  z-index: 100; /* 사이드바가 위에 표시되도록 */
+}
+
+/* 메인 콘텐츠 스타일 */
+.mainContent {
+  flex: 1;
+  padding: 24px;
+  background-color: #f8fafc;
+  height: 100vh; /* 화면 높이에 고정 */
+  margin-top: 0; /* 헤더 없으므로 여백 제거 */
+  overflow: hidden; /* 스크롤 완전 차단 */
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+  display: flex;
+  flex-direction: column; /* 세로 배치로 내부 콘텐츠 관리 */
+}
+
+/* 헤더가 없을 때의 메인 콘텐츠 스타일 */
+.mainContentWithoutHeader {
+  margin-top: 0; /* 헤더가 없을 때는 상단 여백 제거 */
+}
+
+/* 반응형 디자인 - 고정 레이아웃 */
+@media (max-width: 1200px) {
+  .mainContent {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    padding: 0 16px;
+  }
+  
+  .mainContent {
+    padding: 16px;
+  }
+  
+  .mainLayout {
+    flex-direction: row; /* 사이드바는 유지 */
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 12px;
+  }
+}
+
+/* 다크모드 지원 제거 - 항상 라이트모드 유지 */

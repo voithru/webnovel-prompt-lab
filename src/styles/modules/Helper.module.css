@@ -1,0 +1,182 @@
+/* Helper 컴포넌트 스타일 */
+
+.helper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  font-family: var(--font-primary);
+  line-height: var(--line-height-normal);
+  margin-top: var(--spacing-2);
+}
+
+/* Size variants */
+.small {
+  font-size: var(--font-size-xs);
+}
+
+.medium {
+  font-size: var(--font-size-sm);
+}
+
+.large {
+  font-size: var(--font-size-base);
+}
+
+/* Variant styles */
+.default {
+  color: var(--text-secondary);
+}
+
+.info {
+  color: var(--text-info);
+}
+
+.success {
+  color: var(--text-success);
+}
+
+.warning {
+  color: var(--text-warning);
+}
+
+.error {
+  color: var(--text-error);
+}
+
+/* Icon styles */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px; /* Align with first line of text */
+}
+
+.hasIcon {
+  padding-left: 0;
+}
+
+/* Text content */
+.text {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Specific variant background colors for better visibility */
+.info {
+  background-color: var(--bg-info);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border-left: 3px solid var(--text-info);
+}
+
+.success {
+  background-color: var(--bg-success);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border-left: 3px solid var(--text-success);
+}
+
+.warning {
+  background-color: var(--bg-warning);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border-left: 3px solid var(--text-warning);
+}
+
+.error {
+  background-color: var(--bg-error);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-md);
+  border-left: 3px solid var(--text-error);
+}
+
+/* Remove padding when using colored backgrounds */
+.info.hasIcon,
+.success.hasIcon,
+.warning.hasIcon,
+.error.hasIcon {
+  gap: var(--spacing-2);
+}
+
+/* Default variant stays simple */
+.default {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+/* Icon color adjustments for colored backgrounds */
+.info .icon {
+  color: var(--text-info);
+}
+
+.success .icon {
+  color: var(--text-success);
+}
+
+.warning .icon {
+  color: var(--text-warning);
+}
+
+.error .icon {
+  color: var(--text-error);
+}
+
+/* Text color adjustments for colored backgrounds */
+.info .text {
+  color: var(--text-primary);
+}
+
+.success .text {
+  color: var(--text-primary);
+}
+
+.warning .text {
+  color: var(--text-primary);
+}
+
+.error .text {
+  color: var(--text-primary);
+}
+
+/* Dark theme support */
+[data-theme='dark'] .helper {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .default {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .info .text,
+[data-theme='dark'] .success .text,
+[data-theme='dark'] .warning .text,
+[data-theme='dark'] .error .text {
+  color: var(--text-primary);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .helper {
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .info,
+  .success,
+  .warning,
+  .error {
+    border-left-width: 4px;
+  }
+  
+  .icon {
+    font-weight: var(--font-weight-bold);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .helper {
+    transition: none;
+  }
+}

@@ -1,0 +1,442 @@
+/* FileUpload Component - Figma Design System */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-sans);
+}
+
+/* ===== LABEL STYLES ===== */
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--fg-primary);
+  line-height: var(--leading-tight);
+}
+
+.required {
+  color: var(--status-error);
+  font-weight: var(--font-bold);
+}
+
+.infoIcon {
+  display: flex;
+  align-items: center;
+  color: var(--fg-secondary);
+  cursor: help;
+}
+
+.infoIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== UPLOAD WRAPPER ===== */
+
+.uploadWrapper {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  transition: all 0.2s ease;
+}
+
+.uploadWrapper:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== BASIC UPLOAD STYLES ===== */
+
+.basicUpload {
+  padding: 16px;
+}
+
+.fileInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chooseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: var(--bg-secondary);
+  color: var(--fg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chooseButton:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  color: var(--fg-primary);
+}
+
+.chooseButton:disabled {
+  background-color: var(--bg-secondary);
+  color: var(--fg-disabled);
+  cursor: not-allowed;
+}
+
+.fileStatus {
+  color: var(--fg-tertiary);
+  font-size: var(--text-sm);
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-primary);
+}
+
+.fileName {
+  flex: 1;
+  color: var(--fg-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.fileSize {
+  color: var(--fg-secondary);
+  font-size: var(--text-xs);
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  color: var(--status-error);
+}
+
+.removeButton:disabled {
+  color: var(--fg-disabled);
+  cursor: not-allowed;
+}
+
+.removeButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===== DRAG AND DROP STYLES ===== */
+
+.dropZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: var(--bg-secondary);
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 200px;
+}
+
+.dropZone:hover:not(.disabled) {
+  border-color: var(--border-focus);
+  background-color: var(--bg-tertiary);
+}
+
+.dropZone.dragOver {
+  border-color: var(--brand-primary);
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: scale(1.02);
+}
+
+.dropZone.disabled {
+  background-color: var(--bg-primary);
+  border-color: var(--border-tertiary);
+  cursor: not-allowed;
+}
+
+.uploadIcon {
+  margin-bottom: 16px;
+  color: var(--fg-secondary);
+}
+
+.uploadIcon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.uploadText {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.mainText {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--fg-primary);
+  margin: 0 0 8px 0;
+}
+
+.subText {
+  font-size: var(--text-sm);
+  color: var(--fg-tertiary);
+  margin: 0;
+}
+
+.browseButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.browseButton:hover:not(:disabled) {
+  background-color: var(--brand-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.browseButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.browseButton:disabled {
+  background-color: var(--fg-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.searchIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== STATUS STYLES ===== */
+
+.uploadWrapper.error {
+  border-color: var(--status-error);
+}
+
+.uploadWrapper.error:focus-within {
+  border-color: var(--status-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.uploadWrapper.success {
+  border-color: var(--status-success);
+}
+
+.uploadWrapper.success:focus-within {
+  border-color: var(--status-success);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.uploadWrapper.warning {
+  border-color: var(--status-warning);
+}
+
+.uploadWrapper.warning:focus-within {
+  border-color: var(--status-warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.uploadWrapper.info {
+  border-color: var(--status-info);
+}
+
+.uploadWrapper.info:focus-within {
+  border-color: var(--status-info);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== STATUS ICON ===== */
+
+.statusIcon {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.uploadWrapper.error .statusIcon {
+  color: var(--status-error);
+}
+
+.uploadWrapper.success .statusIcon {
+  color: var(--status-success);
+}
+
+.uploadWrapper.warning .statusIcon {
+  color: var(--status-warning);
+}
+
+.uploadWrapper.info .statusIcon {
+  color: var(--status-info);
+}
+
+/* ===== HELPER TEXT ===== */
+
+.helperText {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--fg-tertiary);
+}
+
+.helperText.error {
+  color: var(--status-error);
+}
+
+.helperText.success {
+  color: var(--status-success);
+}
+
+.helperText.warning {
+  color: var(--status-warning);
+}
+
+.helperText.info {
+  color: var(--status-info);
+}
+
+/* ===== FILE INFO ===== */
+
+.fileInfo {
+  margin-top: 8px;
+}
+
+.acceptedFormats {
+  font-size: var(--text-xs);
+  color: var(--fg-tertiary);
+  margin: 0;
+  line-height: var(--leading-normal);
+}
+
+/* ===== HIDDEN INPUT ===== */
+
+.hiddenInput {
+  display: none;
+}
+
+/* ===== FULL WIDTH ===== */
+
+.container.fullWidth {
+  width: 100%;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+  .dropZone {
+    padding: 32px 16px;
+    min-height: 180px;
+  }
+  
+  .uploadIcon svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .mainText {
+    font-size: var(--text-sm);
+  }
+  
+  .subText {
+    font-size: var(--text-xs);
+  }
+  
+  .browseButton {
+    padding: 10px 20px;
+    font-size: var(--text-sm);
+  }
+  
+  .fileInputWrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .chooseButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .dropZone {
+    padding: 24px 12px;
+    min-height: 160px;
+  }
+  
+  .uploadIcon svg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .browseButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .fileItem {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .fileName {
+    text-align: center;
+  }
+  
+  .fileSize {
+    text-align: center;
+  }
+  
+  .removeButton {
+    align-self: center;
+  }
+}

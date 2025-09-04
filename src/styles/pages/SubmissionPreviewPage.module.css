@@ -1,0 +1,462 @@
+/* 프롬프트 검토 페이지 스타일 */
+
+/* 왕관 아이콘 애니메이션 */
+@keyframes crownAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.container {
+  padding: 24px;
+  padding-bottom: 100px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 컨테이너 스크롤 방지 */
+}
+
+.mainContent {
+  display: flex;
+  gap: 32px;
+  overflow: hidden; /* 메인 콘텐츠 스크롤 방지 */
+}
+
+.leftSection {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  overflow: hidden; /* 왼쪽 섹션 스크롤 방지 */
+}
+
+.rightSection {
+  flex: 1;
+  min-width: 400px;
+  overflow: hidden; /* 오른쪽 섹션 스크롤 방지 */
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 12px 24px;
+  border: none;
+  background-color: transparent;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: normal;
+  transition: all 0.2s ease;
+}
+
+.tab.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.promptList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto; /* 프롬프트 목록만 세로 스크롤 허용 */
+  max-height: calc(100vh - 200px); /* 적절한 높이 제한 */
+}
+
+.promptItem {
+  border: none;
+  border-bottom: 1px solid var(--border-light);
+  border-radius: 0;
+  padding: 20px;
+  cursor: pointer;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.promptItem.selected {
+  border-bottom-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.promptHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.promptVersion {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.commentStatus {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: white;
+}
+
+.commentStatus.completed {
+  background-color: var(--success);
+}
+
+.commentStatus.incomplete {
+  background-color: var(--warning);
+}
+
+.promptText {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: 16px;
+  max-height: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.likeDislikeButtons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.likeButton,
+.dislikeButton {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.likeButton {
+  background-color: var(--background-secondary);
+  color: var(--text-secondary);
+}
+
+.likeButton.liked {
+  background-color: var(--primary);
+  color: white;
+}
+
+.dislikeButton {
+  background-color: var(--background-secondary);
+  color: var(--text-secondary);
+}
+
+.dislikeButton.disliked {
+  background-color: var(--error);
+  color: white;
+}
+
+.timestamp {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.translationSection {
+  margin-bottom: 32px;
+}
+
+.translationSubsection {
+  margin-bottom: 24px;
+}
+
+.translationSubtitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.translationContent {
+  padding: 16px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  max-height: 200px;
+  overflow: auto;
+}
+
+.commentSection {
+  margin-bottom: 24px;
+}
+
+/* commentPrompt 스타일 제거됨 */
+
+.commentPlaceholder {
+  padding: 16px;
+  background-color: white;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.placeholderContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.placeholderContent span {
+  flex: 1;
+  text-align: left;
+}
+
+.helpIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* 프롬프트 입력 페이지와 동일한 text box 스타일은 인라인으로 적용됨 */
+
+.commentActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.rightButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.commentEditButton,
+.commentEditButtonDisabled,
+.commentCancelButton,
+.commentSaveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.commentEditButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.commentEditButtonDisabled {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.commentCancelButton {
+  border: 1px solid var(--border-light);
+  background-color: white;
+  color: var(--text-primary);
+}
+
+.commentSaveButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.commentSaveButton:disabled,
+.commentSaveButton.disabled {
+  background-color: var(--background-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* 비활성화된 버튼들의 공통 스타일 */
+.commentCancelButton:disabled,
+.commentSaveButton:disabled {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* 새로운 스타일 추가 */
+.translationToggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 16px;
+}
+
+.toggleButton {
+  padding: 12px 24px;
+  border: 1px solid var(--border-light);
+  background-color: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.toggleButton:hover {
+  background-color: var(--background-secondary);
+}
+
+.toggleButton.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.translationDisplay {
+  margin-bottom: 32px;
+  background-color: var(--background-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 200px;
+}
+
+.promptResultSection {
+  margin-bottom: 32px;
+}
+
+.promptResultSection .translationContent {
+  background-color: var(--background-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 150px;
+}
+
+.bottomButtons {
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-width, 288px); /* AppLayout의 CSS 변수 사용 */
+  right: 0;
+  background-color: white;
+  border-top: 1px solid var(--border-light);
+  border-left: 1px solid var(--border-light);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 900;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.previousButton,
+.temporarySaveButton,
+.finalSelectionButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.previousButton {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.previousButton:hover {
+  background-color: var(--border-light);
+}
+
+.temporarySaveButton {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.temporarySaveButton:hover {
+  background-color: var(--border-light);
+}
+
+.finalSelectionButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.finalSelectionButton:hover {
+  background-color: var(--primary-dark, #1d4ed8);
+}
+
+.finalSelectionButton:disabled {
+  background-color: var(--background-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.leftButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.rightButton {
+  /* Button 컴포넌트의 스타일이 적용됨 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .mainContent {
+    flex-direction: column;
+  }
+  
+  .leftSection,
+  .rightSection {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .sectionTitle {
+    font-size: 20px;
+  }
+  
+  .bottomButtons {
+    left: 0;
+    padding: 12px 16px;
+  }
+}
