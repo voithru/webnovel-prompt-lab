@@ -5,7 +5,7 @@
 
 // Google Sheets API 설정
 const SPREADSHEET_ID = '1oAE0bz_-HYCwmp7ve5tu0z3m7g0mRTNWG2XuJVxy1qU'
-const API_KEY = 'AIzaSyC6lZ9wGRDEifJu_27O0hCUBwmD-MtxSGE'
+const API_KEY = 'AIzaSyDQQhafsQHZIOkPdSnneRV_u3QuT3lHFBs'
 const USER_AUTH_SHEET = 'user_auth'
 
 class EmailAuthService {

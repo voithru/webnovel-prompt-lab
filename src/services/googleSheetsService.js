@@ -7,7 +7,7 @@ import emailAuthService from './emailAuthService.js'
 class GoogleSheetsService {
   constructor() {
     // API 키 직접 설정 (실제 사용 시에는 환경변수로 관리해야 함)
-    this.apiKey = 'AIzaSyC6lZ9wGRDEifJu_27O0hCUBwmD-MtxSGE'
+    this.apiKey = 'AIzaSyDQQhafsQHZIOkPdSnneRV_u3QuT3lHFBs'
     this.baseUrl = 'https://sheets.googleapis.com/v4/spreadsheets'
     
     // API 호출 최적화를 위한 캐시 및 제한

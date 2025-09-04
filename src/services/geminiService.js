@@ -3,7 +3,7 @@ import { getApiKeyService } from './apiKeyService.js'
 
 class GeminiService {
   constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
     
     if (!this.apiKey) {
