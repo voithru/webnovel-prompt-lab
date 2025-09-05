@@ -188,8 +188,8 @@ class GeminiService {
 1. 반드시 ${targetLanguage}로만 번역해주세요.
 2. 다른 언어로 답변하지 마세요.
 3. 번역 결과만 제공하고 추가 설명은 하지 마세요.
-4. '기본 번역문'이 제공될 경우, '번역 가이드'에 따라 기본 번역문을 기초로 확장해주세요.
-5. '기본 번역문'이 제공되지 않을 경우, '번역 가이드'에 따라 원문을 기반으로 번역해주세요.
+4. '기본 번역문'이 제공될 경우, 반드시 '번역 가이드'에 따라 '기본 번역문'을 수정해주세요.
+5. '기본 번역문'이 제공되지 않을 경우, 반드시 '번역 가이드'에 따라 원문을 기반으로 번역해주세요.
 
 ## 시리즈 설정 정보:
 ${seriesSettings ? seriesSettings : '설정 정보가 제공되지 않았습니다.'}
@@ -209,6 +209,12 @@ ${userPrompt ? `## 사용자 프롬프트:
       hasGuidePrompt: !!guidePrompt,
       promptLength: prompt.length
     })
+    
+    // 전체 프롬프트 텍스트 출력 (디버깅용)
+    console.log('📄 전체 프롬프트 텍스트:')
+    console.log('='.repeat(50))
+    console.log(prompt)
+    console.log('='.repeat(50))
 
     return prompt
   }
