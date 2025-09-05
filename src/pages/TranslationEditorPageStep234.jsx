@@ -468,26 +468,11 @@ const TranslationEditorPage = () => {
             if (cachedOriginalText) {
               setOriginalText(cachedOriginalText)
               console.log('✅ 캐시된 원문 데이터 사용 (재로딩 방지):', cachedOriginalText.length, '글자')
-            } else {
-              // 캐시가 없을 때만 Google Sheets에서 로드
-              console.log('🔄 캐시된 원문이 없어서 Google Sheets에서 로드 시작')
-          if (detail.sourceText && detail.sourceText.startsWith('http')) {
-            try {
-              const originalContent = await googleSheetsService.getTextFromUrl(detail.sourceText)
-              setOriginalText(originalContent)
-                  // 로딩된 원문을 캐시에 저장 (고정값으로 사용)
-                  localStorage.setItem(`cachedOriginalText_${taskId}`, originalContent)
-                  console.log('📖 URL에서 원문 로드 완료 및 캐시 저장:', originalContent.length, '글자')
-            } catch (error) {
-              console.error('원문 텍스트 가져오기 실패:', error)
-              setOriginalText(detail.sourceText) // 실패 시 원본 URL 표시
-                  localStorage.setItem(`cachedOriginalText_${taskId}`, detail.sourceText)
-            }
-          } else if (detail.sourceText) {
-            setOriginalText(detail.sourceText)
-                localStorage.setItem(`cachedOriginalText_${taskId}`, detail.sourceText)
-                console.log('📖 구글시트에서 원문 로드 완료 및 캐시 저장:', detail.sourceText.length, '글자')
-              }
+            } else if (detail.sourceText) {
+              // getProjectDetail에서 이미 URL을 처리하여 텍스트를 가져왔음
+              setOriginalText(detail.sourceText)
+              localStorage.setItem(`cachedOriginalText_${taskId}`, detail.sourceText)
+              console.log('📖 Google Sheets에서 원문 로드 완료 및 캐시 저장:', detail.sourceText.length, '글자')
             }
           } else {
             console.log('✅ 복원된 원문 데이터 보존 (Google Sheets 덮어쓰기 방지):', originalText.length, '글자')
@@ -508,31 +493,12 @@ const TranslationEditorPage = () => {
               setTranslatedText(cachedTranslatedText)
               setBaselineTranslationGenerated(true)
               console.log('✅ 캐시된 번역문 데이터 사용 (재로딩 방지):', cachedTranslatedText.length, '글자')
-            } else {
-              // 캐시가 없을 때만 Google Sheets에서 로드
-              console.log('🔄 캐시된 번역문이 없어서 Google Sheets에서 로드 시작')
-          if (detail.baselineTranslationText && detail.baselineTranslationText.startsWith('http')) {
-                // URL에서 기본 번역문 가져오기
-            try {
-              const baselineContent = await googleSheetsService.getTextFromUrl(detail.baselineTranslationText)
-              setTranslatedText(baselineContent)
-                  setBaselineTranslationGenerated(true)
-                  // 로딩된 번역문을 캐시에 저장 (고정값으로 사용)
-                  localStorage.setItem(`cachedTranslatedText_${taskId}`, baselineContent)
-                  console.log('📖 Step 2,3,4: URL에서 기본 번역문 로드 완료 및 캐시 저장:', baselineContent.length, '글자')
-            } catch (error) {
-              console.error('기본 번역문 가져오기 실패:', error)
-              setTranslatedText(detail.baselineTranslationText) // 실패 시 원본 URL 표시
-                  localStorage.setItem(`cachedTranslatedText_${taskId}`, detail.baselineTranslationText)
-                  setBaselineTranslationGenerated(true)
-            }
-              } else if (detail.baselineTranslationText) {
-                // 구글시트에서 직접 기본 번역문 사용
-            setTranslatedText(detail.baselineTranslationText)
-                localStorage.setItem(`cachedTranslatedText_${taskId}`, detail.baselineTranslationText)
-                setBaselineTranslationGenerated(true)
-                console.log('📖 Step 2,3,4: 구글시트 기본 번역문 사용 및 캐시 저장:', detail.baselineTranslationText.length, '글자')
-              }
+            } else if (detail.baselineTranslationText) {
+              // getProjectDetail에서 이미 URL을 처리하여 텍스트를 가져왔음
+              setTranslatedText(detail.baselineTranslationText)
+              localStorage.setItem(`cachedTranslatedText_${taskId}`, detail.baselineTranslationText)
+              setBaselineTranslationGenerated(true)
+              console.log('📖 Google Sheets에서 기본 번역문 로드 완료 및 캐시 저장:', detail.baselineTranslationText.length, '글자')
             }
           } else {
             console.log('✅ 복원된 기본 번역문 데이터 보존 (Google Sheets 덮어쓰기 방지):', translatedText.length, '글자')
@@ -1083,18 +1049,18 @@ const TranslationEditorPage = () => {
               const googleSheetsService = getGoogleSheetsService()
               const detail = await googleSheetsService.getProjectDetail(taskId)
               
-              // 원문 새로고침
+              // 원문 새로고침 (getProjectDetail에서 이미 텍스트 추출됨)
               if (detail.sourceText && detail.sourceText !== originalText) {
                 console.log('📖 Step 2,3,4: 원문 텍스트 새로고침:', detail.sourceText.length, '글자')
                 setOriginalText(detail.sourceText)
                 localStorage.setItem(`cachedOriginalText_${taskId}`, detail.sourceText)
               }
               
-              // 기본 번역문 새로고침
+              // 기본 번역문 새로고침 (getProjectDetail에서 이미 텍스트 추출됨)
               if (detail.baselineTranslationText && detail.baselineTranslationText !== translatedText) {
                 console.log('📝 Step 2,3,4: 기본 번역문 새로고침:', detail.baselineTranslationText.length, '글자')
                 setTranslatedText(detail.baselineTranslationText)
-                localStorage.setItem(`baseline_translation_${taskId}`, detail.baselineTranslationText)
+                localStorage.setItem(`cachedTranslatedText_${taskId}`, detail.baselineTranslationText)
               }
               
               console.log('✅ Step 2,3,4: 첫 번째 프롬프트 전송 - URL 텍스트 내용 새로고침 완료')

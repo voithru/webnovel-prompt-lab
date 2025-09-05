@@ -465,7 +465,8 @@ const TranslationEditorPage = () => {
               console.log('📋 Step 2,3,4: 캐시된 기본 번역문 재사용:', cachedBaselineTranslation.length, '글자')
               setTranslatedText(cachedBaselineTranslation)
             } else if (detail.baselineTranslationText) {
-              console.log('📝 Step 2,3,4: 구글시트 기본 번역문 사용')
+              // getProjectDetail에서 이미 URL을 처리하여 텍스트를 가져왔음
+              console.log('📝 Step 2,3,4: Google Sheets에서 기본 번역문 사용')
               setTranslatedText(detail.baselineTranslationText)
               // 캐싱
               localStorage.setItem(`baseline_translation_${taskId}`, detail.baselineTranslationText)

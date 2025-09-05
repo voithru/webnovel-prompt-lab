@@ -31,7 +31,8 @@ class GoogleSheetsService {
       const cachedData = this.apiCache.get(cacheKey)
       if (cachedData && (now - cachedData.timestamp) < 300000) {
         devLog('📦 캐시된 데이터 사용:', cacheKey)
-        return cachedData.data
+        // 캐시된 데이터를 API 응답과 동일한 형식으로 반환
+        return { values: cachedData.data }
       }
       
       // API 호출 간격 제한
@@ -70,7 +71,7 @@ class GoogleSheetsService {
               data: result,
               timestamp: Date.now()
             })
-            return result
+            return { values: result }
           }
         }
         
@@ -82,7 +83,7 @@ class GoogleSheetsService {
       
       if (!data.values) {
         devLog('values 필드가 없음:', data)
-        return []
+        return { values: [] }
       }
       
       devLog(`총 ${data.values.length}행 데이터 로드됨`)
@@ -94,7 +95,7 @@ class GoogleSheetsService {
         timestamp: Date.now()
       })
       
-      return result
+      return { values: result }
     } catch (error) {
       devError('구글 스프레드시트 데이터 가져오기 실패:', error)
       userError('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -678,14 +679,17 @@ class GoogleSheetsService {
   
   // 데이터 처리 로직을 별도 메서드로 분리
   processProjectData(data, spreadsheetId, sheetName) {
-    if (!data || data.length < 2) {
+    // data가 { values: [] } 형식인지 확인하고 적절히 처리
+    const values = data.values || data
+    
+    if (!values || values.length < 2) {
       throw new Error('데이터가 없거나 헤더만 있습니다.')
     }
     
     // Row 1: 안내사항, Row 2: 컬럼명, Row 3부터: 실제 과제 데이터
-    const infoRow = data[0] // Row 1: 안내사항
-    const headers = data[1] // Row 2: 컬럼명
-    const rows = data.slice(2) // Row 3부터: 실제 과제 데이터
+    const infoRow = values[0] // Row 1: 안내사항
+    const headers = values[1] // Row 2: 컬럼명
+    const rows = values.slice(2) // Row 3부터: 실제 과제 데이터
     
     console.log('안내사항:', infoRow)
     console.log('컬럼명:', headers)
@@ -1359,98 +1363,69 @@ class GoogleSheetsService {
     }
   }
   
-  // Google Sheets 링크에서 텍스트 가져오기
+  // Google Sheets 링크에서 데이터를 정확하게 추출 (API 사용)
   async getGoogleSheetsContent(url) {
-    console.log('Google Sheets 처리 시작 - 원본 URL:', url);
+    console.log('📊 Google Sheets API를 통한 정확한 데이터 추출 시작 - 원본 URL:', url);
     
     const fileId = this.extractFileId(url);
     if (!fileId) {
       throw new Error('Google Sheets 파일 ID를 추출할 수 없습니다.');
     }
 
-    console.log('Google Sheets를 여러 방법으로 처리... (우선순위 순서대로)');
-    
-    // 방법 1: CSV 내보내기 (실제 데이터 가져오기)
-    try {
-      console.log('🟢 방법 1 (최우선): CSV 내보내기 시도');
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&gid=0`;
-      const content = await this.getWebContentWithProxy(csvUrl);
-      if (content && content.length > 50 && !content.includes('<html')) {
-        console.log('✅ 방법 1 성공: CSV에서 실제 데이터 추출 성공');
-        // CSV에서 첫 번째 셀의 내용만 추출 (보통 텍스트 내용이 들어있음)
-        const firstLine = content.split('\n')[0];
-        const firstCell = firstLine.split(',')[0].replace(/"/g, '');
-        return firstCell.length > 50 ? firstCell : content;
-      }
-    } catch (error) {
-      console.log('❌ 방법 1 실패:', error.message);
-    }
+    console.log('📊 스프레드시트 ID 추출 완료:', fileId);
 
-    // 방법 2: 텍스트 내보내기
     try {
-      console.log('🟡 방법 2: 텍스트 내보내기 시도');
-      const txtUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=txt&gid=0`;
-      const content = await this.getWebContentWithProxy(txtUrl);
-      if (content && content.length > 50 && !content.includes('<html')) {
-        console.log('✅ 방법 2 성공: 텍스트 형식에서 실제 데이터 추출 성공');
-        return content;
+      // 1. 먼저 스프레드시트의 모든 시트 목록 가져오기
+      const sheetsMetadata = await this.getSpreadsheetMetadata(fileId);
+      console.log('📋 시트 목록 조회 완료:', sheetsMetadata.sheets.map(s => s.properties.title));
+      
+      // 2. 모든 시트의 데이터를 가져와서 통합
+      const allSheetsData = [];
+      
+      for (const sheet of sheetsMetadata.sheets) {
+        const sheetTitle = sheet.properties.title;
+        const sheetId = sheet.properties.sheetId;
+        
+        console.log(`📄 시트 "${sheetTitle}" 데이터 추출 중...`);
+        
+        try {
+          // 각 시트의 전체 데이터 가져오기 (A1부터 끝까지)
+          const range = `${sheetTitle}!A1:ZZ1000`; // 충분히 큰 범위로 설정
+          const sheetData = await this.getSheetData(fileId, range);
+          
+          if (sheetData && sheetData.values && sheetData.values.length > 0) {
+            // 빈 행과 열 제거
+            const cleanedData = this.cleanSheetData(sheetData.values);
+            
+            if (cleanedData.length > 0) {
+              allSheetsData.push({
+                sheetTitle: sheetTitle,
+                sheetId: sheetId,
+                data: cleanedData
+              });
+              console.log(`✅ 시트 "${sheetTitle}": ${cleanedData.length}행 데이터 추출 완료`);
+            }
+          }
+        } catch (sheetError) {
+          console.warn(`⚠️ 시트 "${sheetTitle}" 데이터 추출 실패:`, sheetError.message);
+          continue; // 다음 시트로 계속 진행
+        }
       }
-    } catch (error) {
-      console.log('❌ 방법 2 실패:', error.message);
-    }
-
-    // 방법 2: 원본 URL
-    try {
-      console.log('🟡 방법 2: 원본 URL 시도');
-      const content = await this.getWebContentWithProxy(url);
-      if (content && content.length > 100) {
-        console.log('✅ 방법 2 성공: 원본 URL에서 텍스트 추출 성공');
-        return this.extractTextFromHtml(content);
+      
+      if (allSheetsData.length === 0) {
+        throw new Error('모든 시트에서 데이터를 가져오는데 실패했습니다.');
       }
+      
+      // 3. 모든 시트 데이터를 하나의 문자열로 포맷팅
+      const formattedContent = this.formatSheetsDataForLLM(allSheetsData);
+      
+      console.log('✅ Google Sheets 데이터 추출 및 포맷팅 완료:', formattedContent.length, '글자');
+      return formattedContent;
+      
     } catch (error) {
-      console.log('❌ 방법 2 실패:', error.message);
+      console.error('❌ Google Sheets API 접근 실패:', error);
+      throw new Error(`Google Sheets 데이터 추출 실패: ${error.message}`);
     }
-
-    // 방법 3: /edit 링크
-    try {
-      console.log('🔵 방법 3: /edit 링크 시도');
-      const editUrl = `https://docs.google.com/spreadsheets/d/${fileId}/edit`;
-      const content = await this.getWebContentWithProxy(editUrl);
-      if (content && content.length > 100) {
-        console.log('✅ 방법 3 성공: /edit 링크에서 텍스트 추출 성공');
-        return this.extractTextFromHtml(content);
-      }
-    } catch (error) {
-      console.log('❌ 방법 3 실패:', error.message);
-    }
-
-    // 방법 3.5: /view 링크 (새로운 방법)
-    try {
-      console.log('🔵 방법 3.5: /view 링크 시도');
-      const viewUrl = `https://docs.google.com/spreadsheets/d/${fileId}/view`;
-      const content = await this.getWebContentWithProxy(viewUrl);
-      if (content && content.length > 100) {
-        console.log('✅ 방법 3.5 성공: /view 링크에서 텍스트 추출 성공');
-        return this.extractTextFromHtml(content);
-      }
-    } catch (error) {
-      console.log('❌ 방법 3.5 실패:', error.message);
-    }
-
-    // 방법 4: /export?format=csv (CSV 형식으로 내보내기)
-    try {
-      console.log('🔴 방법 4 (마지막): /export?format=csv 링크 시도');
-      const exportUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv`;
-      const content = await this.getWebContentWithProxy(exportUrl);
-      if (content && content.length > 100) {
-        console.log('✅ 방법 4 성공: /export?format=csv 링크에서 텍스트 추출 성공');
-        return this.convertCSVToReadableText(content);
-      }
-    } catch (error) {
-      console.log('❌ 방법 4 실패:', error.message);
-    }
-
-    throw new Error('모든 Google Sheets 접근 방법이 실패했습니다.');
   }
   
   // CSV를 읽기 쉬운 텍스트로 변환
@@ -2671,6 +2646,122 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
     }
     
     return null;
+  }
+
+  // 스프레드시트 메타데이터 가져오기 (시트 목록 조회)
+  async getSpreadsheetMetadata(spreadsheetId) {
+    try {
+      const url = `${this.baseUrl}/${spreadsheetId}?key=${this.apiKey}&fields=sheets.properties`;
+      apiLog(`스프레드시트 메타데이터 API 호출`, { spreadsheetId }, 'request');
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, ${errorText}`);
+      }
+      
+      const data = await response.json();
+      apiLog(`메타데이터 응답`, { sheetsCount: data.sheets?.length || 0 }, 'response');
+      
+      return data;
+    } catch (error) {
+      devError('스프레드시트 메타데이터 가져오기 실패:', error);
+      throw error;
+    }
+  }
+
+  // 시트 데이터 정리 (빈 행/열 제거)
+  cleanSheetData(rawData) {
+    if (!rawData || !Array.isArray(rawData)) return [];
+    
+    // 완전히 빈 행들을 제거
+    const nonEmptyRows = rawData.filter(row => {
+      return Array.isArray(row) && row.some(cell => cell && cell.toString().trim() !== '');
+    });
+    
+    if (nonEmptyRows.length === 0) return [];
+    
+    // 오른쪽 끝의 빈 열들 제거
+    const maxColumns = Math.max(...nonEmptyRows.map(row => row.length));
+    let lastNonEmptyCol = 0;
+    
+    for (let col = 0; col < maxColumns; col++) {
+      const hasData = nonEmptyRows.some(row => row[col] && row[col].toString().trim() !== '');
+      if (hasData) {
+        lastNonEmptyCol = col;
+      }
+    }
+    
+    // 각 행을 lastNonEmptyCol + 1까지만 자르기
+    const cleanedData = nonEmptyRows.map(row => {
+      return row.slice(0, lastNonEmptyCol + 1);
+    });
+    
+    return cleanedData;
+  }
+
+  // 모든 시트 데이터를 LLM용 문자열로 포맷팅
+  formatSheetsDataForLLM(allSheetsData) {
+    if (!allSheetsData || allSheetsData.length === 0) {
+      return '스프레드시트에 데이터가 없습니다.';
+    }
+    
+    let formattedContent = '# 시리즈 설정집 정보\n\n';
+    
+    allSheetsData.forEach((sheetInfo, index) => {
+      const { sheetTitle, data } = sheetInfo;
+      
+      formattedContent += `## ${sheetTitle}\n\n`;
+      
+      if (data.length === 0) {
+        formattedContent += '(빈 시트)\n\n';
+        return;
+      }
+      
+      // 첫 번째 행을 헤더로 사용
+      const headers = data[0] || [];
+      const dataRows = data.slice(1);
+      
+      if (headers.length === 0) {
+        formattedContent += '(헤더 정보 없음)\n\n';
+        return;
+      }
+      
+      // 테이블 형태로 포맷팅
+      formattedContent += '| ' + headers.join(' | ') + ' |\n';
+      formattedContent += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
+      
+      // 데이터 행들 추가
+      dataRows.forEach(row => {
+        const paddedRow = [...row];
+        // 헤더 수만큼 열을 맞춤 (빈 셀은 공백으로)
+        while (paddedRow.length < headers.length) {
+          paddedRow.push('');
+        }
+        
+        const formattedRow = paddedRow.slice(0, headers.length).map(cell => {
+          const cellValue = (cell || '').toString().trim();
+          // 파이프 문자 이스케이프
+          return cellValue.replace(/\|/g, '\\|');
+        });
+        
+        formattedContent += '| ' + formattedRow.join(' | ') + ' |\n';
+      });
+      
+      formattedContent += '\n';
+      
+      // 요약 정보 추가
+      formattedContent += `*${sheetTitle}: ${dataRows.length}개 항목*\n\n`;
+    });
+    
+    // 전체 요약
+    const totalSheets = allSheetsData.length;
+    const totalRows = allSheetsData.reduce((sum, sheet) => sum + (sheet.data.length - 1), 0); // 헤더 제외
+    
+    formattedContent += `---\n**전체 요약**: ${totalSheets}개 시트, 총 ${totalRows}개 데이터 항목\n`;
+    
+    return formattedContent;
   }
 
   // 가이드 프롬프트 텍스트 가져오기
