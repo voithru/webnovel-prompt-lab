@@ -485,6 +485,30 @@ const TranslationEditorPage = () => {
     initializeComponent()
   }, [taskId, stepOrder]) // taskId와 stepOrder 변경 시에만 실행
   
+  // 설정집과 가이드 프롬프트를 캐시에서 복원 (taskDetail 업데이트)
+  React.useEffect(() => {
+    if (taskDetail && taskId) {
+      const cachedSettings = localStorage.getItem(`cached_settings_${taskId}`)
+      const cachedGuide = localStorage.getItem(`cached_guide_${taskId}`)
+      
+      if (cachedSettings && (!taskDetail.settingsText || taskDetail.settingsText.length < 100)) {
+        console.log('📦 캐시에서 설정집 복원:', cachedSettings.length, '글자')
+        setTaskDetail(prev => ({
+          ...prev,
+          settingsText: cachedSettings
+        }))
+      }
+      
+      if (cachedGuide && (!taskDetail.guidePromptText || taskDetail.guidePromptText.length < 100)) {
+        console.log('📦 캐시에서 가이드 프롬프트 복원:', cachedGuide.length, '글자')
+        setTaskDetail(prev => ({
+          ...prev,
+          guidePromptText: cachedGuide
+        }))
+      }
+    }
+  }, [taskDetail, taskId])
+  
   // 제출 대상 항목 데이터는 위의 데이터 복원 과정에서 함께 처리됨
   
   // 🚨 무한 리렌더링 방지를 위한 디버깅 (비활성화)
@@ -1207,13 +1231,24 @@ const TranslationEditorPage = () => {
         console.log(`📊 Step 1: 원문 + 프롬프트 처리`);
         console.log(`📖 원문 길이: ${originalText.length}자`);
 
-        const combinedContext = `## 원문 (${sourceLanguage}):\n${originalText}\n\n`
+        const combinedContext = `## 원문 (${sourceLanguage}):\n${originalText}\n\n ## 기본 번역문 \n (기본 번역문은 제공되지 않습니다.)\n`
+        
+        // 설정집 정보 가져오기 (taskDetail 우선, 캐시 fallback)
+        const settingsText = taskDetail?.settingsText || 
+                            localStorage.getItem(`cached_settings_${taskId}`) || 
+                            ''
+        
+        console.log('📊 설정집 정보 확인:', {
+          taskDetailSettings: taskDetail?.settingsText?.length || 0,
+          cachedSettings: localStorage.getItem(`cached_settings_${taskId}`)?.length || 0,
+          finalSettings: settingsText.length
+        })
         
         // Step 1에서는 원문과 사용자 프롬프트만 사용 (기본 번역문 개입 없음)
         const result = await geminiService.translateWithGemini(
           combinedContext, // 원문 텍스트 (기본 번역문 대신)
           targetLanguage, // 타겟 언어
-          taskDetail?.settingsText || '', // 설정집
+          settingsText, // 설정집 (캐시 fallback 포함)
           '', // guidePrompt - 사용하지 않음
           promptText, // userPrompt - 사용자의 순수한 프롬프트만 사용
           user?.email // 사용자 이메일
