@@ -849,7 +849,19 @@ const SubmissionPreviewPage = () => {
       
     } catch (error) {
 
-      alert(`❌ 제출 중 오류가 발생했습니다:\n${error.message}`)
+      // 🎯 사용자 친화적인 에러 메시지 생성
+      let userFriendlyMessage = ''
+      if (error.message.includes('네트워크') || error.message.includes('연결')) {
+        userFriendlyMessage = '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인 후 다시 시도해주세요.'
+      } else if (error.message.includes('서버') || error.message.includes('500')) {
+        userFriendlyMessage = '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.'
+      } else if (error.message.includes('권한') || error.message.includes('403')) {
+        userFriendlyMessage = '제출 권한이 없습니다. 관리자에게 문의해주세요.'
+      } else {
+        userFriendlyMessage = '제출 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.'
+      }
+      
+      alert(`⚠️ ${userFriendlyMessage}`)
       
     } finally {
       // 🛡️ 제출 중 상태 해제 (성공/실패 관계없이)

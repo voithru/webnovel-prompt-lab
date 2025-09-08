@@ -456,7 +456,9 @@ const TranslationEditorPage = () => {
                 localStorage.setItem(llmCallFlagKey, 'true')
               }
             } else {
-              console.log('🔒 Step 1: 기본 번역문 이미 존재하거나 생성 완료됨 - 새로 생성하지 않음')
+              console.error('❌ Step 1: 기본 번역문 생성 실패 - 페이지를 새로고침해주세요')
+              setTranslatedText('[기본 번역문 생성 실패] 페이지를 새로고침해주세요.')
+              setBaselineTranslationGenerated(false)
             }
           } else if (stepOrder > 1) {
             // Step 2,3,4: 캐시된 기본 번역문 우선 확인
@@ -1352,7 +1354,24 @@ const TranslationEditorPage = () => {
         
       } catch (error) {
         console.error('❌ 프롬프트 처리 실패:', error)
-        alert(`프롬프트 처리 중 오류가 발생했습니다: ${error.message}`)
+        
+        // 🎯 사용자 친화적인 에러 메시지 생성
+        let userFriendlyMessage = ''
+        if (error.message.includes('이메일이 제공되지 않았습니다')) {
+          userFriendlyMessage = '로그인 정보에 문제가 있습니다. 다시 로그인해주세요.'
+        } else if (error.message.includes('API 키가 등록되지 않았습니다')) {
+          userFriendlyMessage = 'API 키가 등록되지 않았습니다. 관리자에게 문의하여 API 키를 등록해주세요.'
+        } else if (error.message.includes('API 키 조회 중 오류')) {
+          userFriendlyMessage = 'API 키 조회 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.'
+        } else if (error.message.includes('quota') || error.message.includes('limit')) {
+          userFriendlyMessage = '번역 서비스 사용량 한도를 초과했습니다. 잠시 후 다시 시도해주세요.'
+        } else if (error.message.includes('network') || error.message.includes('연결')) {
+          userFriendlyMessage = '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.'
+        } else {
+          userFriendlyMessage = '번역 처리 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+        }
+        
+        alert(`⚠️ ${userFriendlyMessage}`)
         
         // 에러 발생 시 프롬프트 결과 번역문 초기화
         setPromptResult('')
@@ -1486,8 +1505,21 @@ const TranslationEditorPage = () => {
       }
     } catch (error) {
       console.error('Step 1 실행 실패:', error)
+      
+      // 🎯 사용자 친화적인 에러 메시지 생성
+      let userFriendlyMessage = ''
+      if (error.message.includes('데이터를 찾을 수 없습니다') || error.message.includes('없음')) {
+        userFriendlyMessage = '과제 정보를 불러올 수 없습니다. 관리자에게 문의하거나 다른 과제를 선택해주세요.'
+      } else if (error.message.includes('권한') || error.message.includes('접근')) {
+        userFriendlyMessage = '과제 접근 권한이 없습니다. 관리자에게 문의해주세요.'
+      } else if (error.message.includes('네트워크') || error.message.includes('연결')) {
+        userFriendlyMessage = '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인 후 페이지를 새로고침해주세요.'
+      } else {
+        userFriendlyMessage = '과제를 불러오는 중 문제가 발생했습니다. 페이지를 새로고침하여 다시 시도해주세요.'
+      }
+      
       // 에러 처리: 사용자에게 알림
-      alert(`Step 1 실행 실패: ${error.message}`)
+      alert(`⚠️ ${userFriendlyMessage}`)
     } finally {
       setIsLoading(false)
     }
