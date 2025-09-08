@@ -2469,15 +2469,6 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
       }
       
       console.log('✅ 반환할 결과 객체 키 확인:', Object.keys(result))
-      console.log('🔍 결과 객체 상세:', {
-        id: result.id,
-        title: result.title,
-        sourceTextLength: result.sourceText?.length || 0,
-        baselineLength: result.baselineTranslationText?.length || 0,
-        settingsLength: result.settingsText?.length || 0,
-        guideLength: result.guidePromptText?.length || 0
-      })
-      
 
       return result
     } catch (error) {

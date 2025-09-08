@@ -206,13 +206,6 @@ ${sourceText}
 ${userPrompt ? `${userPrompt}` : `## 가이드 프롬프트:
   ${guidePrompt ? guidePrompt : '가이드 프롬프트가 제공되지 않았습니다.'}`}
 `
-
-    console.log('🔍 구성된 번역 프롬프트 미리보기:', {
-      targetLanguage,
-      hasUserPrompt: !!userPrompt,
-      hasGuidePrompt: !!guidePrompt,
-      promptLength: prompt.length
-    })
     
     // 전체 프롬프트 텍스트 출력 (디버깅용)
     console.log('📄 전체 프롬프트 텍스트: 길이 : ', prompt.length)
