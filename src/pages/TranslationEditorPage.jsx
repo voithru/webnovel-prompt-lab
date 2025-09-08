@@ -403,58 +403,10 @@ const TranslationEditorPage = () => {
           
           // 5. Step 1인 경우 기본 번역문 처리
           if (stepOrder === 1) {
-            const savedBaselineKey = `baseline_translation_${detail.id}_${detail.episode || 'default'}`
-            const savedBaselineTranslation = localStorage.getItem(savedBaselineKey)
-            
-            // JSON 형태로 저장된 기본 번역문 확인 (googleSheetsService와 통일)
-            let baselineText = null
-            if (savedBaselineTranslation) {
-              try {
-                const parsedBaseline = JSON.parse(savedBaselineTranslation)
-                if (parsedBaseline && parsedBaseline.translation && parsedBaseline.translation.length > 50) {
-                  baselineText = parsedBaseline.translation
-                  console.log('📋 저장된 기본 번역문 재사용:', baselineText.length, '글자')
-                  console.log('📅 생성 시간:', parsedBaseline.createdAt)
-                  setTranslatedText(baselineText)
-                  setBaselineTranslationGenerated(true)
-                } else {
-                  console.warn('⚠️ 저장된 번역문이 너무 짧음, 새로 생성')
-                }
-              } catch (parseError) {
-                console.warn('⚠️ 저장된 번역문 파싱 실패, 새로 생성:', parseError.message)
-              }
-            }
-            
-            // 기본 번역문이 없거나 유효하지 않은 경우에만 새로 생성
-            if (!baselineText && detail.sourceText) {
-              console.log('🚀 Step 1: 기본 번역문이 없어서 새로 생성 시작...')
-              console.log('🚀 Step 1: Gemini LLM 1차 번역 시작')
-              const llmCallFlagKey = `baseline_llm_called_${taskId}`
-              try {
-                const aiTranslationResult = await googleSheetsService.generateBaselineTranslationWithGemini(taskId, detail)
-                
-                if (aiTranslationResult.baselineTranslationText) {
-                  const newBaselineText = aiTranslationResult.baselineTranslationText
-                  console.log('✅ Gemini 번역 완료:', newBaselineText.length, '글자')
-                  setTranslatedText(newBaselineText)
-                  setBaselineTranslationGenerated(true)
-                  
-                  // JSON 형태로 저장 (googleSheetsService와 통일)
-                  const baselineData = {
-                    translation: newBaselineText,
-                    createdAt: new Date().toISOString(),
-                    taskId: taskId,
-                    hash: googleSheetsService.generateTextHash ? googleSheetsService.generateTextHash(detail.sourceText) : 'no-hash'
-                  }
-                  localStorage.setItem(savedBaselineKey, JSON.stringify(baselineData))
-                }
-            } catch (error) {
-                console.error('번역 생성 실패:', error)
-                const fallbackText = `[번역 실패] 원문을 확인해주세요.`
-                setTranslatedText(fallbackText)
-                localStorage.setItem(savedBaselineKey, fallbackText)
-                localStorage.setItem(llmCallFlagKey, 'true')
-              }
+            if (detail.baselineTranslationText) {
+              console.log('✅ Step 1: 기본 번역문 로드 완료:', detail.baselineTranslationText.length, '글자')
+              setTranslatedText(detail.baselineTranslationText)
+              setBaselineTranslationGenerated(true)
             } else {
               console.error('❌ Step 1: 기본 번역문 생성 실패 - 페이지를 새로고침해주세요')
               setTranslatedText('[기본 번역문 생성 실패] 페이지를 새로고침해주세요.')

@@ -2508,61 +2508,6 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
     }
   }
 
-  // Step 1용: Gemini LLM을 활용한 1차 번역 수행
-  async generateBaselineTranslationWithGemini(projectId, projectDetail = null) {
-    try {
-      console.log('🚀 Step 1: Gemini LLM 1차 번역 시작')
-      
-      // 프로젝트 상세 정보가 전달되지 않은 경우 가져오기
-      const detail = projectDetail || await this.getProjectDetail(projectId)
-      
-      if (!detail.sourceText || detail.sourceText === '원문 URL이 제공되지 않았습니다.') {
-        throw new Error('원문 텍스트를 가져올 수 없습니다.')
-      }
-      
-      // 타겟 언어 추출 - detail에서 직접 가져오기
-      const targetLanguage = detail.targetLanguage
-      console.log('🔍 언어 페어 구성:', `${detail.sourceLanguage} → ${detail.targetLanguage}`)
-      console.log('🎯 번역 대상 언어:', targetLanguage)
-      
-      // Gemini 서비스 가져오기
-      const geminiService = getGeminiService()
-      
-      // 현재 로그인된 사용자 이메일 가져오기
-      const currentUser = emailAuthService.getCurrentUser()
-      const userEmail = currentUser?.email || null
-      
-      console.log('👤 번역 요청 사용자:', userEmail)
-      console.log('👤 현재 사용자 객체:', currentUser)
-      console.log('👤 이메일 존재 여부:', !!userEmail)
-      
-      // Gemini LLM을 활용한 번역 수행 (사용자별 API Key 사용)
-      const translatedText = await geminiService.translateWithGemini(
-        detail.sourceText,
-        targetLanguage,
-        detail.settingsText,
-        detail.guidePromptText,
-        '', // userPrompt
-        userEmail // 사용자별 API Key 사용
-      )
-      
-      console.log('✅ Gemini LLM 1차 번역 완료:', {
-        originalLength: detail.sourceText.length,
-        translatedLength: translatedText.length,
-        targetLanguage
-      })
-      
-      return {
-        ...detail,
-        baselineTranslationText: translatedText, // Gemini로 생성된 번역문으로 교체
-        isGeminiGenerated: true
-      }
-      
-    } catch (error) {
-      console.error('❌ Gemini LLM 1차 번역 실패:', error)
-      throw error
-    }
-  }
 
   // 언어 쌍에서 타겟 언어 추출
   extractTargetLanguage(languagePair) {
