@@ -574,9 +574,13 @@ const TranslationEditorPage = () => {
     
     let currentTaskDetail = taskDetail
     
-    // taskDetail이 없는 경우 강제로 로드
-    if (!currentTaskDetail && taskId) {
-      console.log('🔄 Step 2,3,4: taskDetail이 없어서 강제 로드 시작...')
+    // taskDetail이 없거나 베이스캠프 프롬프트 정보가 없는 경우에만 로드
+    if (!currentTaskDetail || currentTaskDetail.pathBasecampPrompt === undefined) {
+      console.log('🔄 Step 2,3,4: taskDetail 또는 베이스캠프 정보가 없어서 로드 시작...', { 
+        hasTaskDetail: !!currentTaskDetail, 
+        hasBasecampPrompt: currentTaskDetail?.pathBasecampPrompt !== undefined,
+        taskId 
+      })
       try {
         const googleSheetsService = getGoogleSheetsService()
         console.log('🔍 Step 2,3,4: getProjectDetail 호출 중...', taskId)
@@ -595,37 +599,32 @@ const TranslationEditorPage = () => {
         alert('⚠️ 과제 정보를 불러올 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.')
         return
       }
+    } else {
+      console.log('✅ Step 2,3,4: 기존 taskDetail 사용 (베이스캠프 정보 포함)', {
+        title: currentTaskDetail.title,
+        hasBasecampPrompt: !!currentTaskDetail.pathBasecampPrompt
+      })
     }
     
-    // pathGuidePrompt가 없으면 최신 데이터 강제 로드
-    if (!currentTaskDetail?.pathGuidePrompt) {
-      console.log('🔄 Step 2,3,4: pathGuidePrompt가 없어서 최신 데이터 강제 로드 시작...')
-      try {
-        const googleSheetsService = getGoogleSheetsService()
-        const detail = await googleSheetsService.getProjectDetail(taskId)
-        setTaskDetail(detail)
-        currentTaskDetail = detail // 최신 데이터로 업데이트
-        console.log('✅ Step 2,3,4: 최신 과제 상세 정보 로드 완료:', detail.title)
-      } catch (error) {
-        console.error('❌ Step 2,3,4: 최신 과제 상세 정보 로드 실패:', error)
-      }
-    }
-    
-    // J열의 프롬프트 작성 예시 링크만 사용
-    const guideUrl = currentTaskDetail?.pathGuidePrompt
+    // L열(베이스캠프 프롬프트) 우선, 없으면 K열(가이드 프롬프트) 사용
+    const basecampUrl = currentTaskDetail?.pathBasecampPrompt
+    const guideUrl = basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== '' 
+      ? basecampUrl 
+      : currentTaskDetail?.pathGuidePrompt
     
     // 🚨 디버깅: 상세한 정보 로그
     console.log('🔍 Step 2,3,4 프롬프트 가이드 모달 디버깅:', {
+      현재과제ID: taskId,
+      현재과제제목: currentTaskDetail?.title,
+      현재과제스텝: currentTaskDetail?.step,
+      L열베이스캠프: currentTaskDetail?.pathBasecampPrompt,
+      K열가이드: currentTaskDetail?.pathGuidePrompt,
+      최종사용URL: guideUrl,
+      프롬프트출처: basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== '' ? 'basecamp' : 'guide',
+      rawBasecampUrl: basecampUrl,
       taskDetail: currentTaskDetail,
-      pathGuidePrompt: currentTaskDetail?.pathGuidePrompt,
-      guideUrl: guideUrl,
-      hasGuidePrompt: hasGuidePrompt,
-      taskId: taskId,
-      stepOrder: stepOrder,
       taskDetailExists: !!taskDetail,
-      currentTaskDetailExists: !!currentTaskDetail,
-      taskDetailId: taskDetail?.id,
-      currentTaskDetailId: currentTaskDetail?.id
+      currentTaskDetailExists: !!currentTaskDetail
     })
     
     console.log('🔍 Step 2,3,4 프롬프트 가이드 모달 열기 시도:', {

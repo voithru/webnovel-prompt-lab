@@ -268,8 +268,8 @@ class GoogleSheetsService {
       // 구글 시트 API 시도 (권한 설정 완료)
       try {
         const spreadsheetId = '1oAE0bz_-HYCwmp7ve5tu0z3m7g0mRTNWG2XuJVxy1qU'
-        const range = 'project_for_call!A1:K1000'  // 더 많은 행 가져오기
-        console.log('구글 시트 API 시도 중...')
+        const range = 'project_for_call!A1:L1000'  // L열까지 포함 (베이스캠프 프롬프트)
+        console.log('구글 시트 API 시도 중...', { spreadsheetId, range })
         const data = await this.getSheetData(spreadsheetId, range)
         console.log('구글 시트 API 성공!')
         return this.processProjectData(data, spreadsheetId, range)
@@ -683,6 +683,11 @@ class GoogleSheetsService {
     const values = data.values || data
     
     if (!values || values.length < 2) {
+      console.error('❌ 데이터 부족:', {
+        hasValues: !!values,
+        valuesLength: values?.length || 0,
+        minimumRequired: 2
+      })
       throw new Error('데이터가 없거나 헤더만 있습니다.')
     }
     
@@ -703,8 +708,10 @@ class GoogleSheetsService {
     const targetLanguageIndex = 5 // F열: target_language → 도착어
     const pathBaselineTranslationIndex = 6 // G열: path_baseline_translation → 기본 번역문 링크
     const pathSeriesSettingsIndex = 7 // H열: path_series_settings → 설정집 링크
-    const pathSourceIndex = 8 // I열: path_source → 원문 링크
-    const pathGuidePromptIndex = 9 // J열: path_guide_prompt → AI 프롬프트 링크
+    const pathContextIndex = 8 // I열: path_context → 맥락 분석 JSON 파일 링크 ⭐ 새로 추가
+    const pathSourceIndex = 9 // J열: path_source → 원문 링크 (기존 I열에서 이동)
+    const pathGuidePromptIndex = 10 // K열: path_guide_prompt → AI 프롬프트 링크 (기존 J열에서 이동)
+    const pathBasecampPromptIndex = 11 // L열: path_basecamp_prompt → 베이스캠프 프롬프트 링크 ⭐ 새로 추가
     
     // 데이터를 변환하여 반환
     const projects = rows.map((row, index) => {
@@ -732,6 +739,7 @@ class GoogleSheetsService {
         pathContext: row[pathContextIndex] || '', // ⭐ 새로 추가: 맥락 분석 JSON 파일 링크
         pathSource: row[pathSourceIndex] || '',
         pathGuidePrompt: row[pathGuidePromptIndex] || '',
+        pathBasecampPrompt: row[pathBasecampPromptIndex] || '', // ⭐ 새로 추가: 베이스캠프 프롬프트 링크
         // 호환성을 위한 기존 필드들
         settings: row[pathSeriesSettingsIndex] || '',
         originalUrl: row[pathSourceIndex] || '',
@@ -743,8 +751,6 @@ class GoogleSheetsService {
         sheetName: sheetName
       }
       
-      // 과도한 로깅 제거 - 필요시에만 활성화
-      // console.log(`Processed project:`, project)
       return project
     })
     
@@ -881,7 +887,7 @@ class GoogleSheetsService {
           `cached_guide_${taskId}`,       // 기본 프롬프트
           `cached_prompt_example_${taskId}`, // 프롬프트 작성 예시
           `text_content_${taskId}`,       // 텍스트 콘텐츠
-          `project_detail_${taskId}`,     // 프로젝트 상세 정보
+          `project_detail_${taskId}`,     // 프로젝트 상세 정보 (⭐ pathBasecampPrompt 포함)
           `cachedOriginalText_${taskId}`, // TranslationEditorPage에서 사용하는 원문 캐시
           `baseline_translation_${taskId}`, // TranslationEditorPage에서 사용하는 기본번역문 캐시
           `saved_baseline_translation_${taskId}`, // Step1 기본번역문 캐시
@@ -2108,7 +2114,8 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathSource: project.pathSource,
         pathBaselineTranslation: project.pathBaselineTranslation,
         pathSeriesSettings: project.pathSeriesSettings,
-        pathGuidePrompt: project.pathGuidePrompt
+        pathGuidePrompt: project.pathGuidePrompt,
+        pathBasecampPrompt: project.pathBasecampPrompt,  // ⭐ 베이스캠프 프롬프트 URL 추가
         pathContext: project.pathContext  // ⭐ contextAnalysis URL 추가
       })
       
@@ -2124,6 +2131,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
       const settingsUrl = project.pathSeriesSettings || null
       const contextUrl = project.pathContext || null // ⭐ 새로 추가: 맥락 분석 JSON 파일 URL
       const guideUrl = project.pathGuidePrompt || null // 모든 Step에서 가이드 프롬프트 URL 제공
+      const basecampUrl = project.pathBasecampPrompt || null // ⭐ 새로 추가: 베이스캠프 프롬프트 URL
       
       console.log(`🔍 프로젝트 상세 정보:`, {
         id: project.id,
@@ -2136,7 +2144,8 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathGuidePromptIsEmpty: project.pathGuidePrompt === '',
         pathGuidePromptIsNull: project.pathGuidePrompt === null,
         pathGuidePromptIsUndefined: project.pathGuidePrompt === undefined,
-        pathGuidePromptIsNA: project.pathGuidePrompt === '#N/A'
+        pathGuidePromptIsNA: project.pathGuidePrompt === '#N/A',
+        pathBasecampPrompt: project.pathBasecampPrompt,
       })
       
       // Step별 가이드 프롬프트 처리 방식 결정
@@ -2206,6 +2215,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           sourceTextLength: sourceText?.length || 0,
           sourceTextPreview: sourceText?.substring(0, 200) || 'N/A',
           settingsTextLength: settingsText?.length || 0,
+          contextAnalysisLength: contextAnalysisText?.length || 0,
           guideTextLength: guidePromptText?.length || 0
         })
         
@@ -2441,6 +2451,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathSeriesSettings: project?.pathSeriesSettings,
         pathContext: project?.pathContext, // ⭐ 새로 추가: 맥락 분석 JSON 파일 URL
         pathGuidePrompt: project?.pathGuidePrompt,
+        pathBasecampPrompt: project?.pathBasecampPrompt, // ⭐ 새로 추가: 베이스캠프 프롬프트 URL
         
         // 로드된 텍스트 데이터
         sourceText: sourceText || '', // 원문 텍스트
