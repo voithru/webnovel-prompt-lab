@@ -268,7 +268,7 @@ class GoogleSheetsService {
       // 구글 시트 API 시도 (권한 설정 완료)
       try {
         const spreadsheetId = '1oAE0bz_-HYCwmp7ve5tu0z3m7g0mRTNWG2XuJVxy1qU'
-        const range = 'project_for_call!A1:L1000'  // L열까지 포함 (베이스캠프 프롬프트)
+        const range = 'project_for_call!A1:M1000'  // M열까지 포함 (UUID 추가로 베이스캠프 프롬프트가 M열로 이동)
         console.log('구글 시트 API 시도 중...', { spreadsheetId, range })
         const data = await this.getSheetData(spreadsheetId, range)
         console.log('구글 시트 API 성공!')
@@ -493,8 +493,8 @@ class GoogleSheetsService {
       let unchangedCount = 0
       
       for (let i = 0; i < newData.length; i++) {
-        const taskId = i + 1
         const newTask = newData[i]
+        const taskId = newTask.id // ⭐ UUID 기반 ID 사용
         
         // 로컬 진행 상태 확인
         const localProgress = localStorage.getItem(`taskProgress_${taskId}`)
@@ -700,21 +700,42 @@ class GoogleSheetsService {
     console.log('컬럼명:', headers)
     console.log(`실제 과제 데이터: ${rows.length}개`)
     
-    // 실제 스프레드시트 컬럼 구조에 맞게 인덱스 설정 (A=0, B=1, C=2...)
+    // 🆔 실제 스프레드시트 컬럼 구조에 맞게 인덱스 설정 (A=0, B=1, C=2...)
+    const idIndex = 0 // A열: id → 과제 ID (비어있으면 해당 행은 무시) ⭐ 새로 추가
     const seriesTitleIndex = 1 // B열: series_title → 과제 제목
     const episodeIndex = 2 // C열: episode → 에피소드 번호
     const stepIndex = 3 // D열: step → 단계 (1,2,3,4)
     const sourceLanguageIndex = 4 // E열: source_language → 출발어
     const targetLanguageIndex = 5 // F열: target_language → 도착어
     const pathBaselineTranslationIndex = 6 // G열: path_baseline_translation → 기본 번역문 링크
-    const pathSeriesSettingsIndex = 7 // H열: path_series_settings → 설정집 링크
-    const pathContextIndex = 8 // I열: path_context → 맥락 분석 JSON 파일 링크 ⭐ 새로 추가
-    const pathSourceIndex = 9 // J열: path_source → 원문 링크 (기존 I열에서 이동)
-    const pathGuidePromptIndex = 10 // K열: path_guide_prompt → AI 프롬프트 링크 (기존 J열에서 이동)
-    const pathBasecampPromptIndex = 11 // L열: path_basecamp_prompt → 베이스캠프 프롬프트 링크 ⭐ 새로 추가
+    const uuidIndex = 7 // H열: uuid → 과제 고유 식별자
+    const pathSeriesSettingsIndex = 8 // I열: path_series_settings → 설정집 링크
+    const pathContextIndex = 9 // J열: path_context → 맥락 분석 JSON 파일 링크
+    const pathSourceIndex = 10 // K열: path_source → 원문 링크
+    const pathGuidePromptIndex = 11 // L열: path_guide_prompt → AI 프롬프트 링크
+    const pathBasecampPromptIndex = 12 // M열: path_basecamp_prompt → 베이스캠프 프롬프트 링크
     
-    // 데이터를 변환하여 반환
-    const projects = rows.map((row, index) => {
+    // 🔍 H열(uuid)이 비어있지 않은 유효한 행만 필터링
+    const validRows = rows.filter((row, index) => {
+      const uuid = row[uuidIndex]
+      const isValid = uuid && uuid.toString().trim() !== ''
+      
+      if (!isValid) {
+        console.log(`⏭️ 행 ${index + 3} 건너뛰기: H열(uuid)이 비어있음 - ${row.slice(0, 8).join(' | ')}`)
+      }
+      
+      return isValid
+    })
+    
+    console.log(`✅ 유효한 과제 행: ${validRows.length}개 (전체 ${rows.length}개 중)`)
+    
+    if (validRows.length === 0) {
+      console.warn('⚠️ 유효한 과제가 없습니다. H열(uuid)이 모두 비어있는지 확인하세요.')
+      return []
+    }
+    
+    // 🆔 유효한 데이터만 변환하여 반환
+    const projects = validRows.map((row, index) => {
       const sourceLanguage = row[sourceLanguageIndex] || '한국어'
       const targetLanguage = row[targetLanguageIndex] || '일본어'
       const step = row[stepIndex] || '1'
@@ -724,7 +745,7 @@ class GoogleSheetsService {
       // console.log(`🔍 Row ${index + 1} 데이터 분석:`, row)
       
       const project = {
-        id: index + 1,
+        id: row[uuidIndex], // ⭐ H열 UUID 사용
         title: row[seriesTitleIndex] || '제목없음',
         languagePair: `${sourceLanguage} → ${targetLanguage}`,
         episode: row[episodeIndex] || '1',
@@ -736,15 +757,16 @@ class GoogleSheetsService {
         // 링크 정보
         pathBaselineTranslation: row[pathBaselineTranslationIndex] || '',
         pathSeriesSettings: row[pathSeriesSettingsIndex] || '',
-        pathContext: row[pathContextIndex] || '', // ⭐ 새로 추가: 맥락 분석 JSON 파일 링크
+        pathContext: row[pathContextIndex] || '', // 맥락 분석 JSON 파일 링크
         pathSource: row[pathSourceIndex] || '',
         pathGuidePrompt: row[pathGuidePromptIndex] || '',
-        pathBasecampPrompt: row[pathBasecampPromptIndex] || '', // ⭐ 새로 추가: 베이스캠프 프롬프트 링크
+        pathBasecampPrompt: row[pathBasecampPromptIndex] || '', // 베이스캠프 프롬프트 링크
         // 호환성을 위한 기존 필드들
         settings: row[pathSeriesSettingsIndex] || '',
         originalUrl: row[pathSourceIndex] || '',
         translationUrl: row[pathBaselineTranslationIndex] || '',
         // 메타데이터
+        legacyId: row[idIndex], // A열 레거시 ID (참고용)
         lastUpdated: new Date().toISOString(),
         rowIndex: index + 2, // CSV의 실제 행 번호 (헤더 제외)
         spreadsheetId: spreadsheetId,
@@ -753,6 +775,8 @@ class GoogleSheetsService {
       
       return project
     })
+    
+    console.log(`✅ 최종 처리된 과제: ${projects.length}개`)
     
     return projects
   }
@@ -2220,7 +2244,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           baselineTranslationText = await this.getTextFromUrl(baselineUrl)
         } else {
           // 🔒 기존에 생성된 기본 번역문이 있는지 localStorage에서 확인
-          const savedBaselineKey = `baseline_translation_${project.id || project.title}_${project.episode || 'default'}`
+          const savedBaselineKey = `baseline_translation_${project.id}`
           let savedBaseline = localStorage.getItem(savedBaselineKey)
           
           if (savedBaseline) {

@@ -189,7 +189,7 @@ const MyTasksPage = () => {
       
       // 스프레드시트에서 가져온 데이터를 사용하되, 로컬 스토리지의 진행 상태로 덮어쓰기
       const allTasks = filteredProjectData.map((project, index) => {
-        const taskId = index + 1 // 기존 taskId 형식 (숫자)
+        const taskId = project.id // ⭐ UUID 기반 ID 사용
         
         // 로컬 스토리지에서 진행 상태 확인
         const localProgress = localStorage.getItem(`taskProgress_${taskId}`)
@@ -199,6 +199,7 @@ const MyTasksPage = () => {
         
         // 🔥 submission 데이터가 있으면 무조건 최우선 처리
         const submissionData = localStorage.getItem(`submission_${taskId}`)
+        
         if (submissionData) {
           actualStatus = '완료'
           localStorage.setItem(`taskProgress_${taskId}`, '제출 완료')

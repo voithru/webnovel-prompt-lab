@@ -110,7 +110,7 @@ const ProgressPage = () => {
 
         // 로컬 스토리지에서 진행 상태 확인하여 업데이트
         const tasksWithProgress = filteredTasks.map((project, index) => {
-          const taskId = index + 1
+          const taskId = project.id // ⭐ UUID 기반 ID 사용
           
           // 제출 데이터 확인
           const submissionData = localStorage.getItem(`submission_${taskId}`)
