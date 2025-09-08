@@ -195,50 +195,6 @@ class GoogleSheetsService {
     }
   }
 
-  // AI 번역 생성 (실제로는 OpenAI API 등을 사용)
-  async generateTranslation(originalText, settings, guidePrompt) {
-    try {
-      // TODO: 실제 AI API 연동
-      // 현재는 임시로 번역된 것처럼 보이는 텍스트 생성
-      const mockTranslation = this.generateMockTranslation(originalText, settings, guidePrompt)
-      return mockTranslation
-    } catch (error) {
-      console.error('AI 번역 생성 실패:', error)
-      throw error
-    }
-  }
-
-  // 임시 번역 텍스트 생성 (실제 구현 시 제거)
-  generateMockTranslation(originalText, settings, guidePrompt) {
-    // 설정집과 가이드 프롬프트를 활용한 번역 시뮬레이션
-    let translatedText = originalText
-    
-    // 가이드 프롬프트와 설정집은 백그라운드에서만 사용하고 화면에는 표시하지 않음
-    // (Step 1에서 Gemini LLM 번역에 활용됨)
-    
-    // 간단한 한국어-일본어 번역 시뮬레이션
-    const mockTranslations = {
-      '안녕하세요': 'こんにちは',
-      '감사합니다': 'ありがとうございます',
-      '사랑합니다': '愛しています',
-      '미안합니다': '申し訳ありません',
-      '좋아요': 'いいですね',
-      '재미있어요': '面白いですね',
-      '아름다워요': '美しいですね',
-      '행복해요': '幸せですね'
-    }
-
-    Object.entries(mockTranslations).forEach(([kor, jpn]) => {
-      translatedText = translatedText.replace(new RegExp(kor, 'g'), jpn)
-    })
-
-    // 원본 텍스트가 너무 길면 일부만 번역
-    if (translatedText.length > 1000) {
-      translatedText = translatedText.substring(0, 1000) + '... (AI 자동 번역 완료)'
-    }
-
-    return translatedText
-  }
 
   // CSV 파일에서 데이터 가져오기 (임시 해결책)
   async getProjectDataFromCSV() {
@@ -823,26 +779,6 @@ class GoogleSheetsService {
     ]
   }
 
-  // 실시간 데이터 폴링 (선택사항)
-  startPolling(callback, interval = 30000) { // 30초마다 업데이트
-    const poll = async () => {
-      try {
-        const newData = await this.getProjectData()
-        callback(newData)
-      } catch (error) {
-        console.error('폴링 중 에러 발생:', error)
-      }
-    }
-    
-    // 즉시 한 번 실행
-    poll()
-    
-    // 주기적으로 실행
-    const intervalId = setInterval(poll, interval)
-    
-    // 폴링 중지 함수 반환
-    return () => clearInterval(intervalId)
-  }
 
   // 텍스트 해시 생성 (기본 번역문 고정을 위한 식별자)
   generateTextHash(text) {
@@ -1177,24 +1113,6 @@ class GoogleSheetsService {
       }
       
       if (content) {
-        
-                          // Gzip 압축 데이터 감지 (매우 중요!)
-                  if (content.charCodeAt(0) === 0x1f && content.charCodeAt(1) === 0x8b) {
-                    console.error('🚨 CRITICAL: Electron IPC fetchUrl이 gzip 압축 데이터를 반환했습니다!');
-                    console.error('🚨 이는 Electron main process에서 gzip 해제가 필요합니다.');
-                    console.error('🚨 현재 반환된 데이터:', content.substring(0, 200));
-                    
-                    // 클라이언트 측에서 gzip 해제 시도 (제한적)
-                    try {
-                      const decompressed = await this.decompressGzip(content);
-                      if (decompressed) {
-                        console.log('✅ 클라이언트 측 gzip 해제 성공');
-                        return decompressed;
-                      }
-                    } catch (decompressError) {
-                      console.error('❌ 클라이언트 측 gzip 해제 실패:', decompressError);
-                    }
-                  }
         
         // 바이너리 데이터 감지
         if (this.isBinaryContent(content)) {
@@ -1647,43 +1565,6 @@ class GoogleSheetsService {
     return patternCount >= 2
   }
   
-  // URL에서 파일 확장자 추출
-  getFileExtensionFromUrl(url) {
-    try {
-      // URL에서 파일명 추출
-      const fileName = url.split('/').pop().split('?')[0]
-      const extension = fileName.split('.').pop().toLowerCase()
-      
-      // 일반적인 문서 확장자 확인
-      if (['docx', 'doc', 'txt', 'pdf', 'rtf', 'xlsx', 'xls', 'csv'].includes(extension)) {
-        return extension
-      }
-      
-      // URL 패턴으로 확장자 추측
-      if (url.includes('docx') || url.includes('document') || url.includes('word')) {
-        return 'docx'
-      } else if (url.includes('xlsx') || url.includes('spreadsheet') || url.includes('excel')) {
-        return 'xlsx'
-      } else if (url.includes('txt') || url.includes('text')) {
-        return 'txt'
-      } else if (url.includes('pdf')) {
-        return 'pdf'
-      } else if (url.includes('csv')) {
-        return 'csv'
-      }
-      
-      // Google Drive 파일 ID만 있는 경우, 파일 형식 추측이 어려움
-      if (url.includes('drive.google.com/file/d/')) {
-        console.log('Google Drive 파일 ID만 감지, 파일 형식 추측 어려움')
-        return 'unknown'
-      }
-      
-      return 'unknown'
-    } catch (error) {
-      console.log('파일 확장자 추출 실패:', error.message)
-      return 'unknown'
-    }
-  }
   
   // DOCX 파일 내용 가져오기
   async getDocxContent(fileId) {
@@ -1786,73 +1667,7 @@ class GoogleSheetsService {
       return content
     }
   }
-  
-  // Excel 파일 내용 가져오기
-  async getExcelContent(fileId) {
-    try {
-      console.log('Excel 파일 처리 시작:', fileId)
-      
-      // Excel 파일을 위한 여러 URL 시도
-      const excelUrls = [
-        // 방법 1: Google Sheets CSV export (CORS 문제 없음)
-        `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv`,
-        // 방법 2: Google Sheets preview (CORS 문제 없음)
-        `https://docs.google.com/spreadsheets/d/${fileId}/preview`,
-        // 방법 3: Google Sheets 편집 페이지 (CORS 문제 없음)
-        `https://docs.google.com/spreadsheets/d/${fileId}/edit`,
-        // 방법 4: Google Sheets 공개 링크 (CORS 문제 없음)
-        `https://docs.google.com/spreadsheets/d/${fileId}/pub`
-      ]
-      
-      for (let i = 0; i < excelUrls.length; i++) {
-        try {
-          const excelUrl = excelUrls[i]
-          console.log(`Excel URL 방법 ${i + 1} 시도 중: ${excelUrl}`)
-          const content = await this.getWebContentWithProxy(excelUrl)
-          
-          if (content && content.trim()) {
-            // CSV 형식인 경우
-            if (excelUrl.includes('format=csv') || content.includes(',') && content.includes('\n')) {
-              console.log('CSV 형식 감지, 텍스트 변환...')
-              const csvText = this.convertCSVToReadableText(content)
-              if (csvText && csvText.trim().length > 50) {
-                console.log(`Excel 방법 ${i + 1} 성공 (CSV)`)
-                return csvText.trim()
-              }
-            }
-            
-            // HTML 형식인 경우
-            if (content.includes('<html') || content.includes('<table')) {
-              console.log('HTML 형식 감지, 텍스트 추출...')
-              const extractedText = this.extractTextFromHTML(content)
-              if (extractedText && extractedText.trim().length > 50) {
-                console.log(`Excel 방법 ${i + 1} 성공 (HTML)`)
-                return extractedText.trim()
-              }
-            }
-            
-            // 일반 텍스트로 처리 시도
-            if (!this.isBinaryContent(content)) {
-              const textContent = this.extractTextFromHTML(content)
-              if (textContent && textContent.trim().length > 50) {
-                console.log(`Excel 방법 ${i + 1} 성공 (일반 텍스트)`)
-                return textContent.trim()
-              }
-            }
-          }
-        } catch (error) {
-          console.log(`Excel URL 방법 ${i + 1} 실패:`, error.message)
-          continue
-        }
-      }
-      
-      throw new Error('Excel 파일 내용을 가져올 수 없습니다.')
-    } catch (error) {
-      console.error('Excel 파일 처리 실패:', error)
-      return this.getFallbackTextByUrlPattern(`https://drive.google.com/file/d/${fileId}`)
-    }
-  }
-  
+
   // 텍스트 파일 내용 가져오기
   async getTextFileContent(fileId) {
     try {
@@ -1983,60 +1798,6 @@ class GoogleSheetsService {
     }
   }
   
-  // PDF 파일 내용 가져오기
-  async getPdfContent(fileId) {
-    try {
-      console.log('PDF 파일 처리 시작:', fileId)
-      
-      // PDF 파일을 위한 여러 URL 시도
-      const pdfUrls = [
-        // 방법 1: Google Docs/Sheets preview (CORS 문제 없음)
-        `https://docs.google.com/document/d/${fileId}/preview`,
-        `https://docs.google.com/spreadsheets/d/${fileId}/preview`,
-        // 방법 2: Google Docs/Sheets 편집 페이지 (CORS 문제 없음)
-        `https://docs.google.com/document/d/${fileId}/edit`,
-        `https://docs.google.com/spreadsheets/d/${fileId}/edit`,
-        // 방법 3: Google Docs/Sheets 공개 링크 (CORS 문제 없음)
-        `https://docs.google.com/document/d/${fileId}/pub`,
-        `https://docs.google.com/spreadsheets/d/${fileId}/pub`
-      ]
-      
-      for (let i = 0; i < pdfUrls.length; i++) {
-        try {
-          const pdfUrl = pdfUrls[i]
-          console.log(`PDF URL 방법 ${i + 1} 시도 중: ${pdfUrl}`)
-          const content = await this.getWebContentWithProxy(pdfUrl)
-          
-          if (content && content.trim()) {
-            // PDF 텍스트 추출 시도
-            const extractedText = this.extractTextFromPDF(content)
-            if (extractedText && extractedText.trim().length > 50) {
-              console.log(`PDF 방법 ${i + 1} 성공`)
-              return extractedText.trim()
-            }
-            
-            // HTML인 경우 태그 제거
-            if (content.includes('<html') || content.includes('<body')) {
-              const htmlText = this.extractTextFromHTML(content)
-              if (htmlText && htmlText.trim().length > 50) {
-                console.log(`PDF 방법 ${i + 1} 성공 (HTML)`)
-                return htmlText.trim()
-              }
-            }
-          }
-        } catch (error) {
-          console.log(`PDF URL 방법 ${i + 1} 실패:`, error.message)
-          continue
-        }
-      }
-      
-      throw new Error('PDF 파일 내용을 가져올 수 없습니다.')
-    } catch (error) {
-      console.error('PDF 파일 처리 실패:', error)
-      return this.getFallbackTextByUrlPattern(`https://drive.google.com/file/d/${fileId}`)
-    }
-  }
-  
   // URL 패턴 기반 폴백 텍스트 생성
   getFallbackTextByUrlPattern(url) {
     console.log('폴백 텍스트 생성:', url)
@@ -2142,7 +1903,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathGuidePromptIsNull: project.pathGuidePrompt === null,
         pathGuidePromptIsUndefined: project.pathGuidePrompt === undefined,
         pathGuidePromptIsNA: project.pathGuidePrompt === '#N/A',
-        pathBasecampPrompt: project.pathBasecampPrompt,
+        pathBasecampPrompt: basecampUrl,
       })
       
       // Step별 가이드 프롬프트 처리 방식 결정
@@ -2614,33 +2375,6 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
     if (match) return match[1];
     
     return null;
-  }
-
-
-
-  // Gzip 압축 해제 시도 (클라이언트 측)
-  async decompressGzip(compressedData) {
-    try {
-      // 브라우저에서 gzip 해제 시도
-      if (typeof window !== 'undefined' && window.pako) {
-        const uint8Array = new Uint8Array(compressedData.split('').map(c => c.charCodeAt(0)));
-        const decompressed = window.pako.inflate(uint8Array, { to: 'string' });
-        return decompressed;
-      }
-      
-      // Node.js 환경에서 zlib 사용
-      if (typeof require !== 'undefined') {
-        const zlib = require('zlib');
-        const buffer = Buffer.from(compressedData, 'binary');
-        const decompressed = zlib.gunzipSync(buffer).toString('utf8');
-        return decompressed;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Gzip 해제 실패:', error);
-      return null;
-    }
   }
 
   // 바이너리 데이터를 텍스트로 변환
