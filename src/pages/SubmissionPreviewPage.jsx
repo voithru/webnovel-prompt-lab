@@ -597,7 +597,10 @@ const SubmissionPreviewPage = () => {
             ]
             return sources.find(t => t && t.trim() && t !== '제목없음') || '제목없음'
           })(),
-          episode: episode || 1,
+          episode: (() => {
+            const parsed = parseInt(episode)
+            return !isNaN(parsed) ? parsed : 1  // 0도 유효한 값으로 처리
+          })(),
           languagePair: languagePair || '',
           projectSeason: projectSeason || '',
           
@@ -672,7 +675,10 @@ const SubmissionPreviewPage = () => {
         })(),
         
         // 4. episode: 에피소드 숫자
-        episode: parseInt(episode) || 1,
+        episode: (() => {
+          const parsed = parseInt(episode)
+          return !isNaN(parsed) ? parsed : 1  // 0도 유효한 값으로 처리
+        })(),
         
         // 5. step: 스텝 숫자
         step: parseInt(stepOrder) || 1,
