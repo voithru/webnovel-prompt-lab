@@ -3,15 +3,11 @@ import { getApiKeyService } from './apiKeyService.js'
 
 class GeminiService {
   constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'
-    
-    if (!this.apiKey) {
-      console.warn('⚠️ Gemini API 키가 설정되지 않았습니다. 환경 변수 VITE_GEMINI_API_KEY를 확인해주세요.')
-    }
+    // 🎯 사용자별 API 키만 사용, 환경변수 의존성 제거
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
     
     console.log('GeminiService 초기화:', {
-      apiKey: this.apiKey ? '설정됨' : '설정안됨',
+      mode: '사용자별 API 키 전용',
       baseUrl: this.baseUrl
     })
   }
@@ -19,35 +15,39 @@ class GeminiService {
   // Gemini LLM을 활용한 1차 번역 수행
   async translateWithGemini(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt = '', userEmail = null, contextAnalysis = '') {
     try {
-      // 사용자별 API Key 사용
-      let apiKeyToUse = this.apiKey // 기본 API Key
+      // 🎯 사용자별 API Key만 사용 (환경변수 미사용)
+      let apiKeyToUse = null
       
-      if (userEmail) {
-        console.log('🔑 사용자별 API Key 조회 시도:', userEmail)
-        try {
-          const apiKeyService = getApiKeyService()
-          const userApiKey = await apiKeyService.getUserApiKey(userEmail)
-          if (userApiKey) {
-            apiKeyToUse = userApiKey
-            console.log('✅ 사용자 API Key 사용:', userEmail)
-          } else {
-            console.log('⚠️ 사용자 API Key 없음, 시스템 기본 Key 사용')
-          }
-        } catch (error) {
-          console.error('❌ API Key 조회 실패:', error)
-          console.log('⚠️ 시스템 기본 Key로 fallback')
-        }
+      if (!userEmail) {
+        const errorMsg = '사용자 이메일이 제공되지 않았습니다. 로그인 후 다시 시도해주세요.'
+        console.error('❌', errorMsg)
+        throw new Error(errorMsg)
       }
       
-      if (!apiKeyToUse) {
-        const errorMsg = 'Gemini API 키가 설정되지 않았습니다. 시스템 관리자에게 문의해주세요.'
-        console.error('❌', errorMsg)
-        console.error('❌ API Key 상태:', {
-          systemApiKey: this.apiKey ? '설정됨' : '설정안됨',
-          userEmail: userEmail,
-          userApiKeyFound: userEmail ? '조회 시도됨' : '이메일 없음'
-        })
-        throw new Error(errorMsg)
+      console.log('🔑 사용자별 API Key 조회:', userEmail)
+      try {
+        const apiKeyService = getApiKeyService()
+        const userApiKey = await apiKeyService.getUserApiKey(userEmail)
+        if (userApiKey) {
+          apiKeyToUse = userApiKey
+          console.log('✅ 사용자 API Key 사용:', userEmail)
+        } else {
+          const errorMsg = '사용자 API 키가 등록되지 않았습니다. 관리자에게 문의하여 API 키를 등록해주세요.'
+          console.error('❌', errorMsg)
+          console.error('❌ API Key 상태:', {
+            userEmail: userEmail,
+            userApiKeyFound: false,
+            registeredUsers: '관리자 스프레드시트 확인 필요'
+          })
+          throw new Error(errorMsg)
+        }
+      } catch (error) {
+        console.error('❌ API Key 조회 실패:', error)
+        // 이미 에러가 throw된 경우가 아니면 새로운 에러 throw
+        if (!error.message.includes('API 키가 등록되지 않았습니다')) {
+          throw new Error('API 키 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+        }
+        throw error
       }
 
       if (!sourceText || sourceText.trim() === '') {
@@ -216,15 +216,20 @@ ${userPrompt ? `${userPrompt}` : `## 가이드 프롬프트:
     return prompt
   }
 
-  // API 키 설정
-  setApiKey(apiKey) {
-    this.apiKey = apiKey
-    console.log('✅ Gemini API 키가 설정되었습니다.')
-  }
-
-  // API 키 상태 확인
-  isApiKeySet() {
-    return !!this.apiKey
+  // 🎯 사용자별 API 키 상태 확인 (환경변수 미사용)
+  async isApiKeySet(userEmail) {
+    if (!userEmail) {
+      return false
+    }
+    
+    try {
+      const apiKeyService = getApiKeyService()
+      const userApiKey = await apiKeyService.getUserApiKey(userEmail)
+      return !!userApiKey
+    } catch (error) {
+      console.error('❌ API Key 상태 확인 실패:', error)
+      return false
+    }
   }
 }
 
