@@ -5,6 +5,34 @@ import Button from './Button'
 const PromptGuideModal = ({ isOpen, onClose, guideContent, isLoading }) => {
   const { designTokens } = useDesignSystemContext()
 
+  // 클립보드 복사 기능
+  const handleCopyToClipboard = async () => {
+    if (!guideContent) {
+      alert('⚠️ 복사할 내용이 없습니다.')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(guideContent)
+      alert('✅ 프롬프트 가이드가 클립보드에 복사되었습니다!')
+    } catch (error) {
+      console.error('클립보드 복사 실패:', error)
+      // 대안: textarea를 이용한 복사 (구형 브라우저 지원)
+      try {
+        const textarea = document.createElement('textarea')
+        textarea.value = guideContent
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+        alert('✅ 프롬프트 가이드가 클립보드에 복사되었습니다!')
+      } catch (fallbackError) {
+        console.error('대안 복사 방법도 실패:', fallbackError)
+        alert('❌ 클립보드 복사에 실패했습니다. 수동으로 복사해주세요.')
+      }
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -73,11 +101,32 @@ const PromptGuideModal = ({ isOpen, onClose, guideContent, isLoading }) => {
               ⚠️ 과제당 최대 100개의 프롬프트만 입력 가능합니다
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
+          
+          {/* 우측 버튼들 */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            {/* 클립보드 복사 버튼 */}
+            {guideContent && !isLoading && (
+              <Button
+                variant="blue"
+                size="small"
+                style="solid"
+                onClick={handleCopyToClipboard}
+                title="프롬프트 가이드 전체를 클립보드에 복사"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                복사
+              </Button>
+            )}
+            
+            {/* 닫기 버튼 */}
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none',
+                border: 'none',
               fontSize: '24px',
               cursor: 'pointer',
               color: designTokens.colors.text.muted,
@@ -93,9 +142,10 @@ const PromptGuideModal = ({ isOpen, onClose, guideContent, isLoading }) => {
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent'
             }}
-          >
-            ×
-          </button>
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* 콘텐츠 */}
