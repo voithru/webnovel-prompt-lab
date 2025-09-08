@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { getCurrentUserApiKey } from '@services/userCollectionService'
+import { getGoogleSheetsService } from '@services/googleSheetsService'
 import { useDesignSystemContext } from '../components/common/DesignSystemProvider'
 import { AutoStyledButton, AutoStyledInput, AutoStyledCard } from '../components/common/AutoStyledComponent'
 import Button from '../components/common/Button'
@@ -34,6 +35,7 @@ const SubmissionPreviewPage = () => {
   const [commentView, setCommentView] = useState('quality') // 'quality' or 'saved'
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false) // 제출 완료된 과제의 읽기 전용 모드
   const [isSubmitting, setIsSubmitting] = useState(false) // 제출 중 상태
+  const [taskDetail, setTaskDetail] = useState(null) // 🎯 Google Sheets에서 가져온 과제 상세 정보
 
 
   // 과제 정보
@@ -102,6 +104,30 @@ const SubmissionPreviewPage = () => {
       return // 백업 복원된 경우 일반 로드 건너뛰기
     }
 
+    // 🎯 Google Sheets에서 과제 상세 정보 로드 (프롬프트 정보 포함)
+    const loadTaskDetail = async () => {
+      if (taskIdToUse) {
+        try {
+          console.log('📡 제출 미리보기 - 과제 상세 정보 로드 시작:', taskIdToUse)
+          const googleSheetsService = getGoogleSheetsService()
+          const detail = await googleSheetsService.getProjectDetail(taskIdToUse)
+          
+          if (detail) {
+            setTaskDetail(detail)
+            console.log('✅ 제출 미리보기 - 과제 상세 정보 로드 완료:', {
+              title: detail.title,
+              pathGuidePrompt: detail.pathGuidePrompt ? detail.pathGuidePrompt.substring(0, 50) + '...' : 'null',
+              pathBasecampPrompt: detail.pathBasecampPrompt ? detail.pathBasecampPrompt.substring(0, 50) + '...' : 'null'
+            })
+          }
+        } catch (error) {
+          console.error('❌ 제출 미리보기 - 과제 상세 정보 로드 실패:', error)
+        }
+      }
+    }
+    
+    // 과제 상세 정보 로드 실행
+    loadTaskDetail()
     
     // 🔒 제출 완료 상태 확인
     const checkReadOnlyMode = () => {
@@ -551,6 +577,7 @@ const SubmissionPreviewPage = () => {
         response_raw: JSON.stringify({
           // 과제 기본 정보
           taskId: taskId,
+          taskUuid: taskId,
           stepOrder: stepOrder,
           submittedAt: new Date().toISOString(),
           
@@ -672,18 +699,44 @@ const SubmissionPreviewPage = () => {
           return found || 'unknown'
         })(),
         
-        // 8. path_prompt: 기본 제공 프롬프트
-        path_prompt: (() => {
-          const sources = {
-            taskDataGuide: taskData?.guidePrompt,
-            taskDataPath: taskData?.pathGuidePrompt,
-            locationGuide: location.state?.guidePrompt,
-            locationPath: location.state?.pathGuidePrompt,
-            parsedGuide: parsedData?.guidePrompt,
-            parsedPath: parsedData?.pathGuidePrompt
+        // 8. base_prompt: 기본 제공 프롬프트
+        base_prompt: (() => {
+          // 🎯 1단계: localStorage에서 캐시된 텍스트 확인
+          const cachedGuidePrompt = localStorage.getItem(`cached_guide_${taskId}`)
+          const cachedBasecampPrompt = localStorage.getItem(`cached_basecamp_${taskId}`)
+          
+          // 2단계: 캐시된 베이스캠프 프롬프트가 있는 경우
+          if (cachedBasecampPrompt && cachedBasecampPrompt.trim() !== '') {
+            console.log('✅ 캐시된 베이스캠프 프롬프트 사용')
+            return cachedBasecampPrompt
           }
-          const result = sources.taskDataGuide || sources.taskDataPath || sources.locationGuide || sources.locationPath || sources.parsedGuide || sources.parsedPath || '프롬프트 데이터 없음'
-          return result
+          // 3단계: 캐시된 가이드 프롬프트가 있는 경우
+          else if (cachedGuidePrompt && cachedGuidePrompt.trim() !== '') {
+            console.log('✅ 캐시된 가이드 프롬프트 사용')
+            return cachedGuidePrompt
+          }
+          // 4단계: taskDetail에서 베이스캠프 프롬프트 텍스트 확인
+          else if (taskDetail?.basecampPromptText && taskDetail.basecampPromptText.trim() !== '') {
+            console.log('✅ taskDetail의 베이스캠프 프롬프트 텍스트 사용')
+            return taskDetail.basecampPromptText
+          }
+          // 5단계: taskDetail에서 가이드 프롬프트 텍스트 확인
+          else if (taskDetail?.guidePromptText && taskDetail.guidePromptText.trim() !== '') {
+            console.log('✅ taskDetail의 가이드 프롬프트 텍스트 사용')
+            return taskDetail.guidePromptText
+          }
+          // 6단계: 프롬프트 데이터가 없는 경우
+          else {
+            console.log('❌ 프롬프트 데이터 없음')
+            console.log('🔍 디버깅 정보:', {
+              taskDetailExists: !!taskDetail,
+              hasGuidePromptText: !!taskDetail?.guidePromptText,
+              hasBasecampPromptText: !!taskDetail?.basecampPromptText,
+              cachedGuideExists: !!cachedGuidePrompt,
+              cachedBasecampExists: !!cachedBasecampPrompt
+            })
+            return '프롬프트 데이터 없음'
+          }
         })(),
         
         // 9. user_name: 사용자 이메일
@@ -730,6 +783,9 @@ const SubmissionPreviewPage = () => {
         // 14. experiment_count: 프롬프트 입력 회수
         experiment_count: parseInt(totalPromptCount) || parseInt(taskData?.totalPromptCount) || parseInt(location.state?.totalPromptCount) || parseInt(parsedData?.totalPromptCount) || prompts?.length || 0,
         
+        // 15. task_uuid: 과제 고유 식별자 (UUID)
+        task_uuid: taskId,
+        
         // n8n 라우팅용 필드
         sheet_type: 'submission'
       }
@@ -743,13 +799,14 @@ const SubmissionPreviewPage = () => {
       console.log('- step:', submissionData.step)
       console.log('- source_language:', submissionData.source_language)
       console.log('- target_language:', submissionData.target_language)
-      console.log('- path_prompt:', submissionData.path_prompt?.substring(0, 50) + '...')
+      console.log('- base_prompt:', submissionData.base_prompt?.substring(0, 50) + '...')
       console.log('- user_name:', submissionData.user_name)
       console.log('- submit_prompt:', submissionData.submit_prompt?.substring(0, 50) + '...')
       console.log('- score:', submissionData.score)
       console.log('- comments (개선된 형식):', submissionData.comments?.substring(0, 100) + '...')
       console.log('- create_date_time:', submissionData.create_date_time)
       console.log('- experiment_count:', submissionData.experiment_count)
+      console.log('- task_uuid:', submissionData.task_uuid)
       
       // JSON 파일 업로드 및 다운로드 제거됨
       
