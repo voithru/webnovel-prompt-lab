@@ -490,12 +490,21 @@ const TranslationEditorPage = () => {
     if (taskDetail && taskId) {
       const cachedSettings = localStorage.getItem(`cached_settings_${taskId}`)
       const cachedGuide = localStorage.getItem(`cached_guide_${taskId}`)
+      const cachedContext = localStorage.getItem(`cached_context_${taskId}`)
       
       if (cachedSettings && (!taskDetail.settingsText || taskDetail.settingsText.length < 100)) {
         console.log('📦 캐시에서 설정집 복원:', cachedSettings.length, '글자')
         setTaskDetail(prev => ({
           ...prev,
           settingsText: cachedSettings
+        }))
+      }
+      
+      if (cachedContext && (!taskDetail.contextAnalysisText || taskDetail.contextAnalysisText.length < 100)) {
+        console.log('📦 캐시에서 맥락 분석 복원:', cachedContext.length, '글자')
+        setTaskDetail(prev => ({
+          ...prev,
+          contextAnalysisText: cachedContext
         }))
       }
       
@@ -1109,6 +1118,10 @@ const TranslationEditorPage = () => {
                   console.log('⚙️ Step 1: 설정집 새로고침:', detail.settingsText.length, '글자')
                   localStorage.setItem(`cached_settings_${taskId}`, detail.settingsText)
                 }
+                if (detail.contextAnalysisText) {
+                  console.log('🔍 Step 1: 맥락 분석 새로고침:', detail.contextAnalysisText.length, '글자')
+                  localStorage.setItem(`cached_context_${taskId}`, detail.contextAnalysisText)
+                }
                 if (detail.guidePromptText) {
                   console.log('📋 Step 1: 기본 프롬프트 새로고침:', detail.guidePromptText.length, '글자')
                   localStorage.setItem(`cached_guide_${taskId}`, detail.guidePromptText)
@@ -1238,20 +1251,20 @@ const TranslationEditorPage = () => {
                             localStorage.getItem(`cached_settings_${taskId}`) || 
                             ''
         
-        console.log('📊 설정집 정보 확인:', {
-          taskDetailSettings: taskDetail?.settingsText?.length || 0,
-          cachedSettings: localStorage.getItem(`cached_settings_${taskId}`)?.length || 0,
-          finalSettings: settingsText.length
-        })
+        // 맥락 분석 정보 가져오기 (taskDetail 우선, 캐시 fallback)
+        const contextAnalysisText = taskDetail?.contextAnalysisText || 
+                                  localStorage.getItem(`cached_context_${taskId}`) || 
+                                  ''
         
         // Step 1에서는 원문과 사용자 프롬프트만 사용 (기본 번역문 개입 없음)
         const result = await geminiService.translateWithGemini(
           combinedContext, // 원문 텍스트 (기본 번역문 대신)
           targetLanguage, // 타겟 언어
-          settingsText, // 설정집 (캐시 fallback 포함)
+          settingsText, // 설정집 (가져오되 프롬프트에는 포함되지 않음)
           '', // guidePrompt - 사용하지 않음
           promptText, // userPrompt - 사용자의 순수한 프롬프트만 사용
-          user?.email // 사용자 이메일
+          user?.email, // 사용자 이메일
+          contextAnalysisText // ⭐ 맥락 분석 JSON 텍스트 (프롬프트에 포함됨)
         )
         
         console.log(`🎉 전체 번역 완료: ${result.length}자`);

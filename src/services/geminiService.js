@@ -4,7 +4,7 @@ import { getApiKeyService } from './apiKeyService.js'
 class GeminiService {
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'
     
     if (!this.apiKey) {
       console.warn('⚠️ Gemini API 키가 설정되지 않았습니다. 환경 변수 VITE_GEMINI_API_KEY를 확인해주세요.')
@@ -17,7 +17,7 @@ class GeminiService {
   }
 
   // Gemini LLM을 활용한 1차 번역 수행
-  async translateWithGemini(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt = '', userEmail = null) {
+  async translateWithGemini(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt = '', userEmail = null, contextAnalysis = '') {
     try {
       // 사용자별 API Key 사용
       let apiKeyToUse = this.apiKey // 기본 API Key
@@ -67,7 +67,8 @@ class GeminiService {
         targetLanguage, 
         seriesSettings, 
         guidePrompt,
-        userPrompt
+        userPrompt,
+        contextAnalysis
       )
 
       console.log('📝 번역 프롬프트 구성 완료, Gemini API 호출 중...')
@@ -119,9 +120,9 @@ class GeminiService {
           promptLength: `${this.buildTranslationPrompt(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt).length}자`
         })
         
-        // 🚨 토큰 제한 경고 (Gemini-1.5-flash 기준)
+        // 🚨 토큰 제한 경고 (Gemini-2.5-pro 기준)
         const MAX_INPUT_TOKENS = 1048576  // 약 100만 토큰
-        const MAX_OUTPUT_TOKENS = 8192    // 설정된 최대 출력 토큰
+        const MAX_OUTPUT_TOKENS = 65535    // 설정된 최대 출력 토큰
         
         if (usage.promptTokenCount > MAX_INPUT_TOKENS * 0.8) {
           console.warn('⚠️ 입력 토큰이 제한에 근접:', {
@@ -181,7 +182,7 @@ class GeminiService {
   }
 
   // 번역을 위한 프롬프트 구성
-  buildTranslationPrompt(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt = '') {
+  buildTranslationPrompt(sourceText, targetLanguage, seriesSettings, guidePrompt, userPrompt = '', contextAnalysis = '') {
     let prompt = `당신은 전문 번역가입니다. 다음 지침에 따라 원문을 ${targetLanguage}로 번역해주세요.
 
 # 기본 지침
@@ -192,9 +193,9 @@ class GeminiService {
 5. '기본 번역문'이 제공되지 않을 경우, 반드시 '번역 가이드'에 따라 원문을 기반으로 번역해주세요.
 
 # 참고 자료
-## 시리즈 정보 (설정집, 용어집):
 =============================
-${seriesSettings ? seriesSettings : '설정집, 용어집 정보가 제공되지 않았습니다.'}
+## 맥락 분석 정보 (json 형식)
+${contextAnalysis ? contextAnalysis : '맥락 분석 정보가 제공되지 않았습니다.'}
 =============================
 
 # 데이터 소스
@@ -214,7 +215,7 @@ ${userPrompt ? `${userPrompt}` : `## 가이드 프롬프트:
     })
     
     // 전체 프롬프트 텍스트 출력 (디버깅용)
-    console.log('📄 전체 프롬프트 텍스트:')
+    console.log('📄 전체 프롬프트 텍스트: 길이 : ', prompt.length)
     console.log('='.repeat(50))
     console.log(prompt)
     console.log('='.repeat(50))

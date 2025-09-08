@@ -1,7 +1,7 @@
 // Gemini 서비스 import
 import { getGeminiService } from './geminiService.js'
-import { apiLog, devError, devLog, userError } from '../utils/logger'
 import emailAuthService from './emailAuthService.js'
+import { apiLog, devError, devLog, userError } from '../utils/logger'
 
 // 구글 스프레드시트 연동 서비스
 class GoogleSheetsService {
@@ -729,6 +729,7 @@ class GoogleSheetsService {
         // 링크 정보
         pathBaselineTranslation: row[pathBaselineTranslationIndex] || '',
         pathSeriesSettings: row[pathSeriesSettingsIndex] || '',
+        pathContext: row[pathContextIndex] || '', // ⭐ 새로 추가: 맥락 분석 JSON 파일 링크
         pathSource: row[pathSourceIndex] || '',
         pathGuidePrompt: row[pathGuidePromptIndex] || '',
         // 호환성을 위한 기존 필드들
@@ -2108,6 +2109,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathBaselineTranslation: project.pathBaselineTranslation,
         pathSeriesSettings: project.pathSeriesSettings,
         pathGuidePrompt: project.pathGuidePrompt
+        pathContext: project.pathContext  // ⭐ contextAnalysis URL 추가
       })
       
       // URL 유효성 검사 및 기본값 설정 (Step별로 다르게)
@@ -2120,6 +2122,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
       const sourceUrl = project.pathSource || null
       const baselineUrl = project.pathBaselineTranslation || null
       const settingsUrl = project.pathSeriesSettings || null
+      const contextUrl = project.pathContext || null // ⭐ 새로 추가: 맥락 분석 JSON 파일 URL
       const guideUrl = project.pathGuidePrompt || null // 모든 Step에서 가이드 프롬프트 URL 제공
       
       console.log(`🔍 프로젝트 상세 정보:`, {
@@ -2141,7 +2144,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
       console.log(`📋 Step ${stepOrder} 과제 처리: 가이드 프롬프트 ${isStep1 ? '필수' : '선택적'}`)
       
       // 링크에서 실제 텍스트 내용 로드 (Step별로 다르게 처리)
-      let sourceText, baselineTranslationText, settingsText, guidePromptText
+      let sourceText, baselineTranslationText, settingsText, guidePromptText, contextAnalysisText = ''
       
       if (isStep1) {
         // Step 1: 모든 정보 필수 (AI 자동 번역용)
@@ -2159,9 +2162,10 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           }
         })
         
-        ;[sourceText, settingsText, guidePromptText] = await Promise.all([
+        ;[sourceText, settingsText, contextAnalysisText, guidePromptText] = await Promise.all([
           sourceUrl ? this.getTextFromUrl(sourceUrl) : '원문 URL이 제공되지 않았습니다.',
           settingsUrl ? this.getTextFromUrl(settingsUrl) : '설정집 URL이 제공되지 않았습니다.',
+          contextUrl ? this.getTextFromUrl(contextUrl) : '', // ⭐ 맥락 분석 JSON 파일 가져오기
           guideUrl ? this.getTextFromUrl(guideUrl) : '가이드 프롬프트 URL이 제공되지 않았습니다.'
         ])
         
@@ -2180,6 +2184,14 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
             timestamp: Date.now()
           })
           console.log(`💾 설정집 캐시 저장: ${settingsText.length}자`)
+        }
+        
+        if (contextUrl && contextAnalysisText) {
+          this.apiCache.set(`cached_context_${project.id}`, {
+            data: contextAnalysisText,
+            timestamp: Date.now()
+          })
+          console.log(`💾 맥락 분석 캐시 저장: ${contextAnalysisText.length}자`)
         }
         
         if (guideUrl && guidePromptText) {
@@ -2226,19 +2238,31 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
             console.log('🚀 Step 1: 기본 번역문이 없어서 Gemini LLM으로 생성 시작...')
             try {
               const geminiService = getGeminiService()
-              if (geminiService && geminiService.isApiKeySet()) {
+              if (geminiService) {
                 // 타겟 언어 추출
                 const targetLanguage = this.extractTargetLanguage(project.languagePair)
                 console.log('🎯 Gemini 번역 대상 언어:', targetLanguage)
+            
+                // Gemini LLM으로 번역 수행 (맥락 분석 포함)
+                console.log('🔍 기본 번역문 생성에 사용될 맥락 분석:', contextAnalysisText?.length || 0, '글자')
                 
-                // Gemini LLM으로 번역 수행
+                // 현재 로그인된 사용자 정보 가져오기
+                const currentUser = emailAuthService.getCurrentUser()
+                const userEmail = currentUser?.email || null
+                
+                console.log('👤 기본 번역문 생성 시 사용자 정보:', {
+                  hasCurrentUser: !!currentUser,
+                  userEmail: userEmail
+                })
+                
                 baselineTranslationText = await geminiService.translateWithGemini(
                   sourceText,
                   targetLanguage,
                   settingsText,
                   guidePromptText,
                   '', // userPrompt
-                  null // userEmail - 기본 API Key 사용
+                  userEmail, // ⭐ 현재 로그인된 사용자의 API Key 사용
+                  contextAnalysisText // ⭐ 맥락 분석 JSON 텍스트 추가
                 )
                 console.log('✅ Gemini LLM 기본 번역문 생성 완료:', baselineTranslationText.length)
                 
@@ -2248,6 +2272,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
                   createdAt: new Date().toISOString(),
                   sourceTextHash: this.generateTextHash(sourceText),
                   settingsHash: this.generateTextHash(settingsText),
+                  contextAnalysisHash: this.generateTextHash(contextAnalysisText), // ⭐ 맥락 분석 해시 추가
                   guideHash: this.generateTextHash(guidePromptText),
                   projectInfo: {
                     id: project.id,
@@ -2309,10 +2334,11 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         })
         
         console.log('🔄 Step 2,3,4 텍스트 로딩 시작...')
-        ;[sourceText, baselineTranslationText, settingsText, guidePromptText] = await Promise.all([
+        ;[sourceText, baselineTranslationText, settingsText, contextAnalysisText, guidePromptText] = await Promise.all([
           sourceUrl ? this.getTextFromUrl(sourceUrl) : '원문 URL이 제공되지 않았습니다.',
           baselineUrl ? this.getTextFromUrl(baselineUrl) : '기본 번역문 URL이 제공되지 않았습니다.',
           settingsUrl ? this.getTextFromUrl(settingsUrl) : '설정집 URL이 제공되지 않았습니다.',
+          contextUrl ? this.getTextFromUrl(contextUrl) : '', // ⭐ 맥락 분석 JSON 파일 가져오기
           loadGuidePrompt()
         ])
         
@@ -2341,6 +2367,14 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           console.log(`💾 설정집 캐시 저장: ${settingsText.length}자`)
         }
         
+        if (contextUrl && contextAnalysisText) {
+          this.apiCache.set(`cached_context_${project.id}`, {
+            data: contextAnalysisText,
+            timestamp: Date.now()
+          })
+          console.log(`💾 맥락 분석 캐시 저장: ${contextAnalysisText.length}자`)
+        }
+        
         if (guideUrl && guidePromptText) {
           this.apiCache.set(`cached_guide_${project.id}`, {
             data: guidePromptText,
@@ -2353,6 +2387,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           sourceLength: sourceText?.length || 0,
           baselineLength: baselineTranslationText?.length || 0,
           settingsLength: settingsText?.length || 0,
+          contextAnalysisLength: contextAnalysisText?.length || 0,
           guideLength: guidePromptText?.length || 0,
           guidePromptText: typeof guidePromptText
         })
@@ -2404,12 +2439,14 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         pathSource: project?.pathSource,
         pathBaselineTranslation: project?.pathBaselineTranslation,
         pathSeriesSettings: project?.pathSeriesSettings,
+        pathContext: project?.pathContext, // ⭐ 새로 추가: 맥락 분석 JSON 파일 URL
         pathGuidePrompt: project?.pathGuidePrompt,
         
         // 로드된 텍스트 데이터
         sourceText: sourceText || '', // 원문 텍스트
         baselineTranslationText: baselineTranslationText || '', // 기본 번역문 텍스트
         settingsText: settingsText || '', // 설정집 텍스트
+        contextAnalysisText: contextAnalysisText || '', // ⭐ 새로 추가: 맥락 분석 JSON 텍스트
         guidePromptText: guidePromptText || '', // 가이드 프롬프트 텍스트
         guidePromptUrl: guideUrl || '' // 가이드 프롬프트 URL (모달용)
       }
