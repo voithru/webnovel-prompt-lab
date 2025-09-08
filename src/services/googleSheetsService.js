@@ -856,118 +856,94 @@ class GoogleSheetsService {
     return Math.abs(hash).toString(36)
   }
 
-  // 🗑️ 모든 과제 리셋 (제출 완료 과제만 보호)
+  // 🗑️ 모든 과제 캐시 삭제 (간소화 버전)
   async clearAllTasksCache(includeSubmitted = false) {
     try {
-      const resetType = includeSubmitted ? '전체 리셋 (제출 완료 과제 포함)' : '일반 리셋 (제출 완료 과제만 보호)'
+      const resetType = includeSubmitted ? '전체 리셋 (제출 완료 과제 포함)' : '일부 리셋 (제출 완료 과제 보호)'
       console.log(`🗑️ ${resetType} 시작...`)
       console.log(`🔍 clearAllTasksCache 호출 - includeSubmitted: ${includeSubmitted}`)
       
-      // 🚀 Google Sheets API 캐시 전체 삭제 (즉시 반영을 위해)
-      console.log('🗑️ Google Sheets API 캐시 전체 삭제 시작...')
+      // 🚀 Google Sheets API 캐시 전체 삭제
+      console.log('🗑️ Google Sheets API 캐시 전체 삭제')
       const apiCacheSize = this.apiCache.size
       this.apiCache.clear()
-      console.log(`✅ Google Sheets API 캐시 ${apiCacheSize}개 항목 삭제 완료`)
+      console.log(`✅ API 캐시 ${apiCacheSize}개 항목 삭제 완료`)
       
-      let deletedCount = apiCacheSize // API 캐시 삭제 개수부터 시작
+      let deletedCount = apiCacheSize
       let protectedCount = 0
-      const totalTasks = 100 // 최대 과제 수 (충분히 큰 수)
       
-      for (let taskId = 1; taskId <= totalTasks; taskId++) {
-        // 로컬 스토리지에서 진행 상태 확인
-        const localProgress = localStorage.getItem(`taskProgress_${taskId}`)
-        const submissionData = localStorage.getItem(`submission_${taskId}`)
+      // 🗑️ localStorage 전체 스캔하여 직접 삭제
+      console.log('🔍 localStorage 전체 스캔 중...')
+      const allKeys = Object.keys(localStorage)
+      
+      // 보호할 키 패턴 (삭제하지 않을 중요한 데이터)
+      const protectedPrefixes = [
+        'daily_prompt_count_',    // 일일 프롬프트 카운트
+        'user_api_key_',         // 사용자 API 키  
+        'current_user_',         // 현재 사용자 정보
+        'auth_',                 // 인증 정보
+        'email_auth_'            // 이메일 인증 정보
+      ]
+      
+      const protectedExactKeys = [
+        'user_session',          // 사용자 세션 정보
+        'user_email',            // 사용자 이메일
+        'is_authenticated',      // 인증 상태
+        'auth-store',            // Zustand authStore persist
+        'user-store',            // Zustand userStore persist  
+        'workflow-store',        // Zustand workflowStore persist
+        'google_drive_tokens'    // Google Drive 토큰
+      ]
+      
+      allKeys.forEach(key => {
+        // 보호할 키는 건너뛰기
+        const isProtectedPrefix = protectedPrefixes.some(prefix => key.startsWith(prefix))
+        const isProtectedExact = protectedExactKeys.includes(key)
         
-        console.log(`🔍 과제 ${taskId} 상태 확인: localProgress="${localProgress}", submissionData=${!!submissionData}`)
-        
-        // 전체 리셋이 아닌 경우에만 제출 완료 과제 보호
-        if (!includeSubmitted && (submissionData || localProgress === '제출 완료')) {
-          console.log(`🛡️ 과제 ${taskId} 보호됨 (${localProgress || '제출 완료'}) - 캐시 유지 (includeSubmitted: ${includeSubmitted})`)
-          protectedCount++
-          continue
+        if (isProtectedPrefix || isProtectedExact) {
+          console.log(`🛡️ 보호된 키 건너뛰기: ${key}`)
+          return
         }
         
-        console.log(`🔄 과제 ${taskId} 리셋 중... (includeSubmitted: ${includeSubmitted})`)
-        
-        // API 캐시는 이미 위에서 전체 삭제했으므로 개별 삭제 불필요
-        
-        // localStorage에서 모든 과제 관련 데이터 삭제
-        const localStorageKeys = [
-          // 텍스트 내용 캐시
-          `cached_source_${taskId}`,      // 원문
-          `cached_baseline_${taskId}`,    // 기본 번역문
-          `cached_settings_${taskId}`,    // 설정집
-          `cached_guide_${taskId}`,       // 기본 프롬프트
-          `cached_prompt_example_${taskId}`, // 프롬프트 작성 예시
-          `text_content_${taskId}`,       // 텍스트 콘텐츠
-          `project_detail_${taskId}`,     // 프로젝트 상세 정보 (⭐ pathBasecampPrompt 포함)
-          `cachedOriginalText_${taskId}`, // TranslationEditorPage에서 사용하는 원문 캐시
-          `baseline_translation_${taskId}`, // TranslationEditorPage에서 사용하는 기본번역문 캐시
-          `saved_baseline_translation_${taskId}`, // Step1 기본번역문 캐시
-          // 프롬프트 관련 데이터
-          `promptInput_${taskId}`,        // 프롬프트 입력 데이터
-          `promptReview_${taskId}`,       // 프롬프트 검토 데이터
-          // 코멘트 관련 데이터
-          `comments_${taskId}`,           // 코멘트 데이터
-          `savedComments_${taskId}`,      // 저장된 코멘트
-          // Step 데이터
-          `step1Data_${taskId}`,          // Step 1 데이터
-          `step2Data_${taskId}`,          // Step 2 데이터
-          `step3Data_${taskId}`,          // Step 3 데이터
-          `step4Data_${taskId}`,          // Step 4 데이터
-          // 기타 데이터
-          `taskProgress_${taskId}`,       // 과제 진행 상태 (제출 완료가 아닌 경우)
-          `finalSelection_${taskId}`,     // 최종 선택 데이터
-          `qualityEvaluation_${taskId}`,  // 품질 평가 데이터
-          `bestPrompt_${taskId}`,         // Best 프롬프트 데이터
-          `submission_${taskId}`          // 제출 데이터 (전체 리셋 시 삭제)
-        ]
-        
-        localStorageKeys.forEach(key => {
-          if (localStorage.getItem(key)) {
-            localStorage.removeItem(key)
-            console.log(`🗑️ localStorage 삭제: ${key} (과제 ${taskId})`)
-            deletedCount++
-          }
-        })
-        
-        // 추가로 taskId와 관련된 모든 키를 찾아서 삭제 (안전장치)
-        const allKeys = Object.keys(localStorage)
-        console.log(`🔍 과제 ${taskId} 전체 localStorage 키 확인:`, allKeys.filter(key => key.includes(`_${taskId}`)))
-        let taskRelatedKeys = allKeys.filter(key => 
-          key.includes(`_${taskId}`) && 
-          !key.startsWith('daily_prompt_count_') // 일일 프롬프트 카운트 키 보호
-        )
-        console.log(`🔍 과제 ${taskId} 삭제 대상 키 (daily_prompt_count_ 제외):`, taskRelatedKeys)
-        
-        // includeSubmitted가 false인 경우에만 submission_ 키를 보호
+        // 제출 완료 과제 보호 로직 (일부 리셋의 경우)
         if (!includeSubmitted) {
-          taskRelatedKeys = taskRelatedKeys.filter(key => !key.includes('submission_'))
+          // submission_ 키들은 항상 보호
+          if (key.startsWith('submission_')) {
+            protectedCount++
+            console.log(`🛡️ 제출 데이터 보호: ${key}`)
+            return
+          }
+          
+          // taskProgress_ 키들에서 '제출 완료' 상태인 것 보호
+          if (key.startsWith('taskProgress_')) {
+            const progressValue = localStorage.getItem(key)
+            if (progressValue === '제출 완료') {
+              protectedCount++
+              console.log(`🛡️ 제출 완료 과제 보호: ${key}`)
+              return
+            }
+          }
+          
+          // submission이 있는 과제의 다른 데이터들도 보호
+          const taskId = key.split('_').slice(1).join('_') // 패턴 이후의 taskId 추출
+          if (taskId && localStorage.getItem(`submission_${taskId}`)) {
+            protectedCount++
+            console.log(`🛡️ 제출된 과제 관련 데이터 보호: ${key}`)
+            return
+          }
         }
         
-        taskRelatedKeys.forEach(key => {
-          if (localStorage.getItem(key)) { // Check if key still exists before removing
-            localStorage.removeItem(key)
-            console.log(`🗑️ 추가 localStorage 삭제: ${key} (과제 ${taskId})`)
-          }
-        })
-
-        // Add a log to confirm localStorage state after clearing for this task
-        console.log(`✅ 과제 ${taskId} localStorage 정리 완료. 잔여 submission/progress 키 확인:`, {
-          submissionDataAfterClear: localStorage.getItem(`submission_${taskId}`),
-          taskProgressAfterClear: localStorage.getItem(`taskProgress_${taskId}`)
-        });
-        
-        // 캐시 삭제만 수행하고 텍스트 재로드는 하지 않음
-        // 실제 텍스트 로드는 사용자가 과제를 클릭할 때만 수행
-        console.log(`✅ 과제 ${taskId} 캐시 삭제 완료 - 텍스트는 과제 클릭 시 로드됨`)
-      }
+        // 보호 패턴에 없는 모든 키 삭제 (과제 관련 여부 상관없이)
+        localStorage.removeItem(key)
+        deletedCount++
+        console.log(`🗑️ localStorage 삭제: ${key}`)
+      })
       
-      console.log(`✅ ${resetType} 완료: ${deletedCount}개 캐시 삭제, ${protectedCount}개 보호`)
+      console.log(`✅ ${resetType} 완료: ${deletedCount}개 삭제, ${protectedCount}개 보호`)
       
       const message = includeSubmitted 
-        ? `전체 리셋이 완료되었습니다. (${deletedCount}개 캐시 삭제)`
-        : `모든 과제가 리셋되었습니다. (${protectedCount}개 제출 완료 과제 보호, ${deletedCount}개 캐시 삭제)`
+        ? `전체 리셋 완료 (${deletedCount}개 삭제)`
+        : `일부 리셋 완료 (${protectedCount}개 보호, ${deletedCount}개 삭제)`
       
       return {
         success: true,
@@ -977,7 +953,7 @@ class GoogleSheetsService {
       }
       
     } catch (error) {
-      console.error('❌ 모든 과제 리셋 실패:', error)
+      console.error('❌ 과제 리셋 실패:', error)
       return {
         success: false,
         error: error.message,
@@ -2250,12 +2226,15 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           if (savedBaseline) {
             try {
               const parsedBaseline = JSON.parse(savedBaseline)
-              if (parsedBaseline && parsedBaseline.translation && parsedBaseline.translation.length > 50) {
+              if (parsedBaseline && parsedBaseline.translation && parsedBaseline.translation.length > 50 && parsedBaseline.status !== 'failed') {
                 baselineTranslationText = parsedBaseline.translation
                 console.log('🔒 기존 저장된 기본 번역문 사용 (고정):', baselineTranslationText.length, '글자')
                 console.log('📅 생성 시간:', parsedBaseline.createdAt)
+              } else if (parsedBaseline.status === 'failed' && parsedBaseline.retryable) {
+                console.log('🔄 이전 실패 기록 발견 - 재시도 시작:', parsedBaseline.reason)
+                savedBaseline = null // 재시도하도록 설정
               } else {
-                throw new Error('저장된 번역문이 너무 짧음')
+                throw new Error('저장된 번역문이 너무 짧거나 유효하지 않음')
               }
             } catch (parseError) {
               console.warn('⚠️ 저장된 기본 번역문 파싱 실패, 새로 생성:', parseError.message)
@@ -2317,6 +2296,17 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
               } else {
                 baselineTranslationText = 'Gemini API 키가 설정되지 않았습니다.'
                 console.warn('⚠️ Gemini API 키 미설정')
+                
+                // 🔄 실패 시에도 재시도를 위해 실패 기록 저장
+                const failureData = {
+                  translation: baselineTranslationText,
+                  createdAt: new Date().toISOString(),
+                  status: 'failed',
+                  reason: 'api_key_missing',
+                  retryable: true
+                }
+                localStorage.setItem(savedBaselineKey, JSON.stringify(failureData))
+                console.log('💾 기본 번역문 실패 기록 저장 (재시도 가능):', savedBaselineKey)
               }
             } catch (error) {
               console.error('❌ Gemini LLM 기본 번역문 생성 실패:', error)
@@ -2338,6 +2328,19 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
               }
               
               baselineTranslationText = userFriendlyMessage
+              
+              // 🔄 실패 시에도 재시도를 위해 실패 기록 저장
+              const failureData = {
+                translation: baselineTranslationText,
+                createdAt: new Date().toISOString(),
+                status: 'failed',
+                reason: 'translation_error',
+                retryable: true,
+                errorMessage: error.message, // 개발자용 로그는 원본 유지
+                userMessage: userFriendlyMessage // 사용자용 메시지 추가
+              }
+              localStorage.setItem(savedBaselineKey, JSON.stringify(failureData))
+              console.log('💾 기본 번역문 실패 기록 저장 (재시도 가능):', savedBaselineKey)
             }
           }
         }
