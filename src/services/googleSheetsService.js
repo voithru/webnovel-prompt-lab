@@ -2320,7 +2320,24 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
               }
             } catch (error) {
               console.error('❌ Gemini LLM 기본 번역문 생성 실패:', error)
-              baselineTranslationText = 'Gemini LLM 번역 실패: ' + error.message
+              
+              // 🎯 사용자 친화적인 에러 메시지 생성
+              let userFriendlyMessage = ''
+              if (error.message.includes('이메일이 제공되지 않았습니다')) {
+                userFriendlyMessage = '로그인 정보에 문제가 있습니다. 다시 로그인해주세요.'
+              } else if (error.message.includes('API 키가 등록되지 않았습니다')) {
+                userFriendlyMessage = 'API 키가 등록되지 않았습니다. 관리자에게 문의하여 API 키를 등록해주세요.'
+              } else if (error.message.includes('API 키 조회 중 오류')) {
+                userFriendlyMessage = 'API 키 조회 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.'
+              } else if (error.message.includes('quota') || error.message.includes('limit')) {
+                userFriendlyMessage = '번역 서비스 사용량 한도를 초과했습니다. 잠시 후 다시 시도해주세요.'
+              } else if (error.message.includes('network') || error.message.includes('연결')) {
+                userFriendlyMessage = '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.'
+              } else {
+                userFriendlyMessage = '번역 처리 중 일시적인 오류가 발생했습니다. 페이지를 새로고침하여 다시 시도해주세요.'
+              }
+              
+              baselineTranslationText = userFriendlyMessage
             }
           }
         }
