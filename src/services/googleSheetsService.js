@@ -861,7 +861,6 @@ class GoogleSheetsService {
     try {
       const resetType = includeSubmitted ? '전체 리셋 (제출 완료 과제 포함)' : '일부 리셋 (제출 완료 과제 보호)'
       console.log(`🗑️ ${resetType} 시작...`)
-      console.log(`🔍 clearAllTasksCache 호출 - includeSubmitted: ${includeSubmitted}`)
       
       // 🚀 Google Sheets API 캐시 전체 삭제
       console.log('🗑️ Google Sheets API 캐시 전체 삭제')
@@ -1092,17 +1091,19 @@ class GoogleSheetsService {
           
           // 여러 CORS 프록시 시도 (안정성 순서대로 - 2025년 업데이트)
           const proxies = [
-            // 가장 안정적인 프록시들 (2025년 기준)
+            // 2025년 작동하는 최신 프록시들
             `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(fetchUrl)}`,
+            `https://api.allorigins.win/get?url=${encodeURIComponent(fetchUrl)}`,
+            `https://corsproxy.io/?${encodeURIComponent(fetchUrl)}`,
+            `https://cors-anywhere.herokuapp.com/${fetchUrl}`,
+            `https://crossorigin.me/${fetchUrl}`,
+            // 기존 프록시들 (백업용)
             `https://thingproxy.freeboard.io/fetch/${fetchUrl}`,
             `https://cors-proxy.fringe.zone/${fetchUrl}`,
             `https://proxy.techzbots1.workers.dev/?u=${encodeURIComponent(fetchUrl)}`,
-            // 백업 프록시들
-            `https://corsproxy.io/?${encodeURIComponent(fetchUrl)}`,
             `https://cors.sh/${fetchUrl}`,
             `https://proxy.cors.sh/${fetchUrl}`,
-            `https://yacdn.org/proxy/${fetchUrl}`,
-            `https://api.allorigins.win/get?url=${encodeURIComponent(fetchUrl)}`
+            `https://yacdn.org/proxy/${fetchUrl}`
           ];
           
           let lastError = null;
@@ -1114,9 +1115,15 @@ class GoogleSheetsService {
               const response = await fetch(proxyUrl, {
                 method: 'GET',
                 headers: proxyUrl.includes('allorigins.win') 
-                  ? { 'Accept': 'application/json' }
-                  : { 'Accept': 'text/plain,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
-                timeout: 10000 // 10초 타임아웃
+                  ? { 
+                      'Accept': 'application/json',
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                  : { 
+                      'Accept': 'text/plain,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    },
+                timeout: 15000 // 15초 타임아웃 (증가)
               });
               
               if (!response.ok) {
