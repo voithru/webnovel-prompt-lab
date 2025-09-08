@@ -865,24 +865,7 @@ class GoogleSheetsService {
         
         console.log(`🔄 과제 ${taskId} 리셋 중... (includeSubmitted: ${includeSubmitted})`)
         
-        // 모든 과제 관련 캐시 삭제 (프롬프트, 코멘트, 텍스트 내용 등)
-        const cacheKeys = [
-          `cached_source_${taskId}`,      // 원문 캐시
-          `cached_baseline_${taskId}`,    // 기본 번역문 캐시
-          `cached_settings_${taskId}`,    // 설정집 캐시
-          `cached_guide_${taskId}`,       // 기본 프롬프트 캐시
-          `cached_prompt_example_${taskId}`, // 프롬프트 작성 예시 캐시
-          `text_content_${taskId}`,       // 텍스트 콘텐츠 캐시
-          `project_detail_${taskId}`      // 프로젝트 상세 정보 캐시
-        ]
-        
-        cacheKeys.forEach(key => {
-          if (this.apiCache.has(key)) {
-            this.apiCache.delete(key)
-            deletedCount++
-            console.log(`🗑️ 캐시 삭제: ${key} (과제 ${taskId})`)
-          }
-        })
+        // API 캐시는 이미 위에서 전체 삭제했으므로 개별 삭제 불필요
         
         // localStorage에서 모든 과제 관련 데이터 삭제
         const localStorageKeys = [
@@ -920,6 +903,7 @@ class GoogleSheetsService {
           if (localStorage.getItem(key)) {
             localStorage.removeItem(key)
             console.log(`🗑️ localStorage 삭제: ${key} (과제 ${taskId})`)
+            deletedCount++
           }
         })
         
@@ -2226,7 +2210,13 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         })
         
         // Step 1: 기본 번역문 처리 (고정 번역문 시스템)
+        console.log('🔍 Step 1 기본 번역문 처리 시작:', {
+          hasBaselineUrl: !!baselineUrl,
+          baselineUrl: baselineUrl
+        })
+        
         if (baselineUrl) {
+          console.log('📄 baselineUrl에서 기본 번역문 가져오기:', baselineUrl)
           baselineTranslationText = await this.getTextFromUrl(baselineUrl)
         } else {
           // 🔒 기존에 생성된 기본 번역문이 있는지 localStorage에서 확인
