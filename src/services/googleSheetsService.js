@@ -839,7 +839,13 @@ class GoogleSheetsService {
       console.log(`🗑️ ${resetType} 시작...`)
       console.log(`🔍 clearAllTasksCache 호출 - includeSubmitted: ${includeSubmitted}`)
       
-      let deletedCount = 0
+      // 🚀 Google Sheets API 캐시 전체 삭제 (즉시 반영을 위해)
+      console.log('🗑️ Google Sheets API 캐시 전체 삭제 시작...')
+      const apiCacheSize = this.apiCache.size
+      this.apiCache.clear()
+      console.log(`✅ Google Sheets API 캐시 ${apiCacheSize}개 항목 삭제 완료`)
+      
+      let deletedCount = apiCacheSize // API 캐시 삭제 개수부터 시작
       let protectedCount = 0
       const totalTasks = 100 // 최대 과제 수 (충분히 큰 수)
       
