@@ -8,6 +8,7 @@ import PromptBubble from '../components/common/PromptBubble'
 import AppLayout from '../components/layout/AppLayout'
 import BottomActionBar from '../components/common/BottomActionBar'
 import PromptGuideModal from '../components/common/PromptGuideModal'
+import TranslationDiffViewer from '../components/common/TranslationDiffViewer'
 
 import styles from '../styles/pages/TranslationEditorPage.module.css'
 import { getGoogleSheetsService } from '../services/googleSheetsService'
@@ -64,6 +65,9 @@ const TranslationEditorPage = () => {
   const [guideContent, setGuideContent] = useState('')
   const [isGuideLoading, setIsGuideLoading] = useState(false)
   const [hasGuidePrompt, setHasGuidePrompt] = useState(false)
+  
+  // 프롬프트 결과 번역문 표시 모드: 'result' 또는 'diff'
+  const [promptResultMode, setPromptResultMode] = useState('result')
 
   // 과제 정보 (실제 데이터 사용)
   const {
@@ -1867,79 +1871,132 @@ const TranslationEditorPage = () => {
               minWidth: 0, // flexbox에서 스크롤이 제대로 작동하도록
               height: '100%' // 전체 높이 사용
             }}>
-              {/* 프롬프트 결과 번역문 헤더 - 토글 버튼과 동일한 스타일 */}
+              {/* 프롬프트 결과 번역문 토글 버튼 그룹 */}
               <div style={{
                 display: 'flex',
-                backgroundColor: designTokens.colors.background.primary, // 선택된 상태로 표시
+                backgroundColor: designTokens.colors.background.secondary,
                 borderRadius: designTokens.borders.radius.md,
-                padding: '16px 24px', // 토글 버튼과 동일한 패딩
+                padding: '4px',
                 border: `1px solid ${designTokens.colors.border.light}`,
-                flexShrink: 0, // 축소되지 않도록 고정
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
+                flexShrink: 0 // 축소되지 않도록 고정
               }}>
-                <span style={{
-                  fontSize: designTokens.typography.fontSize.sm,
-                  fontWeight: designTokens.typography.fontWeight.medium,
-                  color: designTokens.colors.text.primary // 선택된 상태의 텍스트 색상
-                }}>
+                <button
+                  onClick={() => setPromptResultMode('result')}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    backgroundColor: promptResultMode === 'result' 
+                      ? designTokens.colors.background.primary 
+                      : 'transparent',
+                    color: promptResultMode === 'result' 
+                      ? designTokens.colors.text.primary 
+                      : designTokens.colors.text.muted,
+                    border: 'none',
+                    borderRadius: designTokens.borders.radius.sm,
+                    fontSize: designTokens.typography.fontSize.sm,
+                    fontWeight: designTokens.typography.fontWeight.medium,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
                   프롬프트 결과 번역문
-                </span>
+                </button>
+                <button
+                  onClick={() => setPromptResultMode('diff')}
+                  disabled={!translatedText || !promptResult} // 기본 번역문과 프롬프트 결과가 모두 있을 때만 활성화
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    backgroundColor: promptResultMode === 'diff' 
+                      ? designTokens.colors.background.primary 
+                      : 'transparent',
+                    color: (!translatedText || !promptResult) 
+                      ? designTokens.colors.text.disabled
+                      : promptResultMode === 'diff' 
+                      ? designTokens.colors.text.primary 
+                      : designTokens.colors.text.muted,
+                    border: 'none',
+                    borderRadius: designTokens.borders.radius.sm,
+                    fontSize: designTokens.typography.fontSize.sm,
+                    fontWeight: designTokens.typography.fontWeight.medium,
+                    cursor: (!translatedText || !promptResult) ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease',
+                    opacity: (!translatedText || !promptResult) ? 0.5 : 1
+                  }}
+                >
+                  번역문 비교
+                </button>
               </div>
+              {/* 토글에 따른 컨텐츠 영역 */}
               <div style={{ 
                 flex: 1,
-                padding: '16px',
-                backgroundColor: isReadOnlyMode ? designTokens.colors.background.secondary : 'white',
-                border: `1px solid ${designTokens.colors.border.light}`,
-                borderRadius: designTokens.borders.radius.md,
-                overflow: 'auto',
                 minHeight: 0 // flexbox에서 스크롤이 제대로 작동하도록
               }}>
-                <div style={{
-                  fontSize: designTokens.typography.fontSize.sm,
-                  lineHeight: designTokens.typography.lineHeight.normal,
-                  color: promptResult ? designTokens.colors.text.primary : designTokens.colors.text.muted,
-                  whiteSpace: 'pre-wrap',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  wordBreak: 'break-all'
-                }}>
-                  {promptLoading ? (
+                {promptResultMode === 'diff' ? (
+                  // Diff 비교 모드
+                  <div style={{ height: '100%', overflow: 'auto' }}>
+                    <TranslationDiffViewer
+                      baselineTranslation={translatedText}
+                      promptResultTranslation={promptResult}
+                      targetLanguage={taskDetail?.targetLanguage || languagePair?.split('→')[1]?.trim()?.toLowerCase() || 'ko'}
+                    />
+                  </div>
+                ) : (
+                  // 프롬프트 결과 번역문 모드
+                  <div style={{ 
+                    height: '100%',
+                    padding: '16px',
+                    backgroundColor: isReadOnlyMode ? designTokens.colors.background.secondary : 'white',
+                    border: `1px solid ${designTokens.colors.border.light}`,
+                    borderRadius: designTokens.borders.radius.md,
+                    overflow: 'auto'
+                  }}>
                     <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%',
-                      gap: '16px',
-                      color: designTokens.colors.text.muted
+                      fontSize: designTokens.typography.fontSize.sm,
+                      lineHeight: designTokens.typography.lineHeight.normal,
+                      color: promptResult ? designTokens.colors.text.primary : designTokens.colors.text.muted,
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-all'
                     }}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        border: `3px solid ${designTokens.colors.border.light}`,
-                        borderTop: `3px solid ${designTokens.colors.primary}`,
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite'
-                      }} />
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                          프롬프트 결과 로딩 중...
+                      {promptLoading ? (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '100%',
+                          gap: '16px',
+                          color: designTokens.colors.text.muted
+                        }}>
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            border: `3px solid ${designTokens.colors.border.light}`,
+                            borderTop: `3px solid ${designTokens.colors.primary}`,
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                          }} />
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                              프롬프트 결과 로딩 중...
+                            </div>
+                            <div style={{ fontSize: '12px' }}>
+                              프롬프트 결과를 생성하고 있습니다
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ fontSize: '12px' }}>
-                          프롬프트 결과를 생성하고 있습니다
-                        </div>
-                      </div>
+                      ) : promptResult ? (
+                        promptResult
+                      ) : isReadOnlyMode ? (
+                        '🔒 제출 완료된 과제입니다. 오른쪽 프롬프트를 선택하여 번역 결과를 확인하세요.'
+                      ) : (
+                        '프롬프트를 입력하고 전송하면 번역 결과가 여기에 표시됩니다.'
+                      )}
                     </div>
-                  ) : promptResult ? (
-                    promptResult
-                  ) : isReadOnlyMode ? (
-                    '🔒 제출 완료된 과제입니다. 오른쪽 프롬프트를 선택하여 번역 결과를 확인하세요.'
-                  ) : (
-                    '프롬프트를 입력하고 전송하면 번역 결과가 여기에 표시됩니다.'
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
