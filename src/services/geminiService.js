@@ -4,7 +4,7 @@ import { getApiKeyService } from './apiKeyService.js'
 class GeminiService {
   constructor() {
     // 🎯 사용자별 API 키만 사용, 환경변수 의존성 제거
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'
     
     console.log('GeminiService 초기화:', {
       mode: '사용자별 API 키 전용',
