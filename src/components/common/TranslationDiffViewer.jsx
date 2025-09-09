@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useDesignSystemContext } from './DesignSystemProvider';
 import { diffLines, diffWords, diffChars } from 'diff';
+import Button from './Button';
 
 const TranslationDiffViewer = ({ 
   baselineTranslation, 
@@ -141,6 +142,62 @@ const TranslationDiffViewer = ({
   const handleRightFullscreenScroll = () => {
     if (!isSyncEnabled) return;
     syncScroll(rightFullscreenRef.current, leftFullscreenRef.current);
+  };
+
+  // 프롬프트 결과 번역문 복사 기능
+  const handleCopyTranslation = async () => {
+    if (!promptResultTranslation) {
+      alert('⚠️ 복사할 번역문이 없습니다.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(promptResultTranslation);
+      alert('✅ 프롬프트 결과 번역문이 클립보드에 복사되었습니다!');
+    } catch (error) {
+      console.error('클립보드 복사 실패:', error);
+      // 대안: textarea를 이용한 복사 (구형 브라우저 지원)
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = promptResultTranslation;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ 프롬프트 결과 번역문이 클립보드에 복사되었습니다!');
+      } catch (fallbackError) {
+        console.error('대안 복사 방법도 실패:', fallbackError);
+        alert('❌ 클립보드 복사에 실패했습니다. 수동으로 복사해주세요.');
+      }
+    }
+  };
+
+  // 기본 번역문 복사 기능
+  const handleCopyBaseline = async () => {
+    if (!baselineTranslation) {
+      alert('⚠️ 복사할 기본 번역문이 없습니다.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(baselineTranslation);
+      alert('✅ 기본 번역문이 클립보드에 복사되었습니다!');
+    } catch (error) {
+      console.error('클립보드 복사 실패:', error);
+      // 대안: textarea를 이용한 복사 (구형 브라우저 지원)
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = baselineTranslation;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ 기본 번역문이 클립보드에 복사되었습니다!');
+      } catch (fallbackError) {
+        console.error('대안 복사 방법도 실패:', fallbackError);
+        alert('❌ 클립보드 복사에 실패했습니다. 수동으로 복사해주세요.');
+      }
+    }
   };
 
   // 언어별 폰트 설정
@@ -364,22 +421,94 @@ const TranslationDiffViewer = ({
             width: '100%',
             maxWidth: '600px'
           }}>
-            <span style={{
-              fontWeight: '600',
-              color: designTokens.colors.text.primary,
-              textAlign: 'center',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
               flex: 1
             }}>
-              기본 번역문
-            </span>
-            <span style={{
-              fontWeight: '600',
-              color: designTokens.colors.text.primary,
-              textAlign: 'center',
+              <span style={{
+                fontWeight: '600',
+                color: designTokens.colors.text.primary,
+                textAlign: 'center'
+              }}>
+                기본 번역문
+              </span>
+              {baselineTranslation && (
+                <button
+                  onClick={handleCopyBaseline}
+                  title="기본 번역문을 클립보드에 복사"
+                  style={{
+                    padding: '4px 6px',
+                    fontSize: '10px',
+                    minWidth: 'auto',
+                    height: '24px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: designTokens.colors.primary,
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#1d4ed8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = designTokens.colors.primary;
+                  }}
+                >
+                  📋
+                </button>
+              )}
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
               flex: 1
             }}>
-              프롬프트 결과
-            </span>
+              <span style={{
+                fontWeight: '600',
+                color: designTokens.colors.text.primary,
+                textAlign: 'center'
+              }}>
+                프롬프트 결과
+              </span>
+              {promptResultTranslation && (
+                <button
+                  onClick={handleCopyTranslation}
+                  title="프롬프트 결과 번역문을 클립보드에 복사"
+                  style={{
+                    padding: '4px 6px',
+                    fontSize: '10px',
+                    minWidth: 'auto',
+                    height: '24px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: designTokens.colors.primary,
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#1d4ed8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = designTokens.colors.primary;
+                  }}
+                >
+                  📋
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1005,9 +1134,42 @@ const TranslationDiffViewer = ({
                           fontWeight: '600',
                           fontSize: '16px',
                           borderRight: `1px solid ${designTokens.colors.border.light}`,
-                          color: designTokens.colors.text.primary
+                          color: designTokens.colors.text.primary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
                         }}>
-                          기본 번역문
+                          <span>기본 번역문</span>
+                          {baselineTranslation && (
+                            <button
+                              onClick={handleCopyBaseline}
+                              title="기본 번역문을 클립보드에 복사"
+                              style={{
+                                padding: '4px 6px',
+                                fontSize: '10px',
+                                minWidth: 'auto',
+                                height: '24px',
+                                border: 'none',
+                                borderRadius: '4px',
+                                backgroundColor: designTokens.colors.primary,
+                                color: 'white',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = '#1d4ed8';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = designTokens.colors.primary;
+                              }}
+                            >
+                  📋
+                            </button>
+                          )}
                         </div>
                         <div style={{
                           width: '50%',
@@ -1015,9 +1177,42 @@ const TranslationDiffViewer = ({
                           textAlign: 'center',
                           fontWeight: '600',
                           fontSize: '16px',
-                          color: designTokens.colors.text.primary
+                          color: designTokens.colors.text.primary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
                         }}>
-                          프롬프트 결과
+                          <span>프롬프트 결과</span>
+                          {promptResultTranslation && (
+                            <button
+                              onClick={handleCopyTranslation}
+                              title="프롬프트 결과 번역문을 클립보드에 복사"
+                              style={{
+                                padding: '4px 6px',
+                                fontSize: '10px',
+                                minWidth: 'auto',
+                                height: '24px',
+                                border: 'none',
+                                borderRadius: '4px',
+                                backgroundColor: designTokens.colors.primary,
+                                color: 'white',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = '#1d4ed8';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = designTokens.colors.primary;
+                              }}
+                            >
+                              📋
+                            </button>
+                          )}
                         </div>
                       </>
                     )}
