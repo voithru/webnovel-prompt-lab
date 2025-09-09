@@ -691,7 +691,9 @@ const TranslationEditorPage = () => {
         setGuideContent(content)
         
         // 베이스캠프 프롬프트인지 가이드 프롬프트인지 구분하여 캐시 저장
-        const isBasecampPrompt = basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== ''
+        // guideUrl에 베이스캠프 URL이 들어가 있는지 확인
+        const isBasecampPrompt = guideUrl === basecampUrl && basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== ''
+        
         if (isBasecampPrompt) {
           localStorage.setItem(`cached_basecamp_${taskId}`, content)
           console.log('✅ Step 2,3,4: 베이스캠프 프롬프트 캐시 저장:', content.length, '글자')
@@ -1651,9 +1653,8 @@ const TranslationEditorPage = () => {
             </div>
           </div>
 
-          {/* 프롬프트 가이드 버튼 - 디버깅용 강제 표시 */}
-          {(hasGuidePrompt || (taskDetail?.pathGuidePrompt && taskDetail.pathGuidePrompt !== '#N/A') || (taskDetail?.guidePromptUrl && taskDetail.guidePromptUrl !== '#N/A') || (taskDetail?.title && (taskDetail.title.includes('금릉춘') || taskDetail.title.includes('백수요사')))) && (
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          {/* 프롬프트 가이드 버튼 - 작품에 관계없이 항상 표시 */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="white"
                 size="small"
@@ -1669,8 +1670,7 @@ const TranslationEditorPage = () => {
                 </svg>
                 프롬프트 작성 예시
               </Button>
-            </div>
-          )}
+          </div>
         </div>
         
         {/* 메인 콘텐츠 영역 - 세로 2분할 */}
