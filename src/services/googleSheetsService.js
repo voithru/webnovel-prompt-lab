@@ -615,7 +615,9 @@ class GoogleSheetsService {
         `cached_source_${taskId}`,
         `cached_baseline_${taskId}`,
         `cached_settings_${taskId}`,
-        `cached_guide_${taskId}`
+        `cached_guide_${taskId}`,
+        `cached_basecamp_${taskId}`,  // 베이스캠프 프롬프트 추가
+        `cached_context_${taskId}`    // 맥락 분석 추가
       ]
       
       let deletedCount = 0
@@ -1911,7 +1913,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
       console.log(`📋 Step ${stepOrder} 과제 처리: 가이드 프롬프트 ${isStep1 ? '필수' : '선택적'}`)
       
       // 링크에서 실제 텍스트 내용 로드 (Step별로 다르게 처리)
-      let sourceText, baselineTranslationText, settingsText, guidePromptText, contextAnalysisText = ''
+      let sourceText, baselineTranslationText, settingsText, guidePromptText, basecampPromptText, contextAnalysisText = ''
       
       if (isStep1) {
         // Step 1: 모든 정보 필수 (AI 자동 번역용)
@@ -1929,11 +1931,35 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           }
         })
         
+        // 베이스캠프 프롬프트 우선, 없으면 가이드 프롬프트 로드
+        const loadBestPrompt = async () => {
+          if (basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== '') {
+            console.log('🏡 Step 1: 베이스캠프 프롬프트 로드 시도...', basecampUrl)
+            const basecampContent = await this.getTextFromUrl(basecampUrl)
+            if (basecampContent) {
+              basecampPromptText = basecampContent
+              console.log('✅ Step 1: 베이스캠프 프롬프트 로드 성공:', basecampContent.length, '글자')
+              return basecampContent // 가이드 프롬프트로도 사용
+            }
+          }
+          
+          if (guideUrl && guideUrl !== '#N/A' && guideUrl !== '') {
+            console.log('📋 Step 1: 가이드 프롬프트 로드 시도...', guideUrl)
+            const guideContent = await this.getTextFromUrl(guideUrl)
+            if (guideContent) {
+              console.log('✅ Step 1: 가이드 프롬프트 로드 성공:', guideContent.length, '글자')
+              return guideContent
+            }
+          }
+          
+          return '프롬프트 URL이 제공되지 않았습니다.'
+        }
+        
         ;[sourceText, settingsText, contextAnalysisText, guidePromptText] = await Promise.all([
           sourceUrl ? this.getTextFromUrl(sourceUrl) : '원문 URL이 제공되지 않았습니다.',
           settingsUrl ? this.getTextFromUrl(settingsUrl) : '설정집 URL이 제공되지 않았습니다.',
           contextUrl ? this.getTextFromUrl(contextUrl) : '', // ⭐ 맥락 분석 JSON 파일 가져오기
-          guideUrl ? this.getTextFromUrl(guideUrl) : '가이드 프롬프트 URL이 제공되지 않았습니다.'
+          loadBestPrompt() // 베이스캠프 우선, 가이드 차순위
         ])
         
         // 🔄 파일 내용 캐시에 저장 (변경점 감지용)
@@ -2151,13 +2177,29 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
           }
         })
         
+        // Step 2,3,4에서도 베이스캠프 프롬프트 우선 로드
+        const loadBestPromptStep234 = async () => {
+          if (basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== '') {
+            console.log('🏡 Step 2,3,4: 베이스캠프 프롬프트 로드 시도...', basecampUrl)
+            const basecampContent = await this.getTextFromUrl(basecampUrl)
+            if (basecampContent) {
+              basecampPromptText = basecampContent
+              console.log('✅ Step 2,3,4: 베이스캠프 프롬프트 로드 성공:', basecampContent.length, '글자')
+              return basecampContent
+            }
+          }
+          
+          // 베이스캠프가 없으면 기존 가이드 프롬프트 로드 로직 사용
+          return await loadGuidePrompt()
+        }
+        
         console.log('🔄 Step 2,3,4 텍스트 로딩 시작...')
         ;[sourceText, baselineTranslationText, settingsText, contextAnalysisText, guidePromptText] = await Promise.all([
           sourceUrl ? this.getTextFromUrl(sourceUrl) : '원문 URL이 제공되지 않았습니다.',
           baselineUrl ? this.getTextFromUrl(baselineUrl) : '기본 번역문 URL이 제공되지 않았습니다.',
           settingsUrl ? this.getTextFromUrl(settingsUrl) : '설정집 URL이 제공되지 않았습니다.',
           contextUrl ? this.getTextFromUrl(contextUrl) : '', // ⭐ 맥락 분석 JSON 파일 가져오기
-          loadGuidePrompt()
+          loadBestPromptStep234() // 베이스캠프 우선, 가이드 차순위
         ])
         
         // 🔄 파일 내용 캐시에 저장 (변경점 감지용)
@@ -2267,6 +2309,7 @@ URL이 올바른지 확인하고, 파일이 공개되어 있는지 확인해주�
         settingsText: settingsText || '', // 설정집 텍스트
         contextAnalysisText: contextAnalysisText || '', // ⭐ 새로 추가: 맥락 분석 JSON 텍스트
         guidePromptText: guidePromptText || '', // 가이드 프롬프트 텍스트
+        basecampPromptText: basecampPromptText || '', // ⭐ 새로 추가: 베이스캠프 프롬프트 텍스트
         guidePromptUrl: guideUrl || '' // 가이드 프롬프트 URL (모달용)
       }
       

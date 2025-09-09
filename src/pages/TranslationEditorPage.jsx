@@ -444,10 +444,11 @@ const TranslationEditorPage = () => {
     if (taskDetail && taskId) {
       const cachedSettings = localStorage.getItem(`cached_settings_${taskId}`)
       const cachedGuide = localStorage.getItem(`cached_guide_${taskId}`)
+      const cachedBasecamp = localStorage.getItem(`cached_basecamp_${taskId}`)
       const cachedContext = localStorage.getItem(`cached_context_${taskId}`)
       
       if (cachedSettings && (!taskDetail.settingsText || taskDetail.settingsText.length < 100)) {
-        console.log('📦 캐시에서 설정집 복원:', cachedSettings.length, '글자')
+        console.log('📦 Step 1: 캐시에서 설정집 복원:', cachedSettings.length, '글자')
         setTaskDetail(prev => ({
           ...prev,
           settingsText: cachedSettings
@@ -455,15 +456,24 @@ const TranslationEditorPage = () => {
       }
       
       if (cachedContext && (!taskDetail.contextAnalysisText || taskDetail.contextAnalysisText.length < 100)) {
-        console.log('📦 캐시에서 맥락 분석 복원:', cachedContext.length, '글자')
+        console.log('📦 Step 1: 캐시에서 맥락 분석 복원:', cachedContext.length, '글자')
         setTaskDetail(prev => ({
           ...prev,
           contextAnalysisText: cachedContext
         }))
       }
       
-      if (cachedGuide && (!taskDetail.guidePromptText || taskDetail.guidePromptText.length < 100)) {
-        console.log('📦 캐시에서 가이드 프롬프트 복원:', cachedGuide.length, '글자')
+      // 베이스캠프 프롬프트 캐시 복원 (우선순위)
+      if (cachedBasecamp && (!taskDetail.basecampPromptText || taskDetail.basecampPromptText.length < 100)) {
+        console.log('📦 Step 1: 캐시에서 베이스캠프 프롬프트 복원:', cachedBasecamp.length, '글자')
+        setTaskDetail(prev => ({
+          ...prev,
+          basecampPromptText: cachedBasecamp
+        }))
+      }
+      // 가이드 프롬프트 캐시 복원 (차순위)
+      else if (cachedGuide && (!taskDetail.guidePromptText || taskDetail.guidePromptText.length < 100)) {
+        console.log('📦 Step 1: 캐시에서 가이드 프롬프트 복원:', cachedGuide.length, '글자')
         setTaskDetail(prev => ({
           ...prev,
           guidePromptText: cachedGuide
@@ -622,6 +632,17 @@ const TranslationEditorPage = () => {
       
       if (content) {
         setGuideContent(content)
+        
+        // 베이스캠프 프롬프트인지 가이드 프롬프트인지 구분하여 캐시 저장
+        const isBasecampPrompt = basecampUrl && basecampUrl !== '#N/A' && basecampUrl !== ''
+        if (isBasecampPrompt) {
+          localStorage.setItem(`cached_basecamp_${taskId}`, content)
+          console.log('✅ Step 1: 베이스캠프 프롬프트 캐시 저장:', content.length, '글자')
+        } else {
+          localStorage.setItem(`cached_guide_${taskId}`, content)
+          console.log('✅ Step 1: 가이드 프롬프트 캐시 저장:', content.length, '글자')
+        }
+        
         console.log('✅ 가이드 프롬프트 텍스트 로드 완료:', content.length, '글자')
       } else {
         setGuideContent('')
@@ -1102,8 +1123,13 @@ const TranslationEditorPage = () => {
                   console.log('🔍 Step 1: 맥락 분석 새로고침:', detail.contextAnalysisText.length, '글자')
                   localStorage.setItem(`cached_context_${taskId}`, detail.contextAnalysisText)
                 }
-                if (detail.guidePromptText) {
-                  console.log('📋 Step 1: 기본 프롬프트 새로고침:', detail.guidePromptText.length, '글자')
+                
+                // 베이스캠프 프롬프트 우선 저장, 없으면 가이드 프롬프트 저장
+                if (detail.basecampPromptText) {
+                  console.log('📋 Step 1: 베이스캠프 프롬프트 새로고침:', detail.basecampPromptText.length, '글자')
+                  localStorage.setItem(`cached_basecamp_${taskId}`, detail.basecampPromptText)
+                } else if (detail.guidePromptText) {
+                  console.log('📋 Step 1: 가이드 프롬프트 새로고침:', detail.guidePromptText.length, '글자')
                   localStorage.setItem(`cached_guide_${taskId}`, detail.guidePromptText)
                 }
               }
