@@ -244,7 +244,7 @@ const TranslationDiffViewer = ({
 
     if (!newText) {
       return { 
-        oldHighlighted: `<span style="background-color: rgba(239, 68, 68, 0.2); text-decoration: line-through; padding: 2px 4px; border-radius: 3px;">${escapeHtml(oldText)}</span>`, 
+        oldHighlighted: `<span style="background-color: rgba(239, 68, 68, 0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(oldText)}</span>`, 
         newHighlighted: '',
         inlineHighlighted: createSimpleInlineDiff(oldText, ''),
         isIdentical: false
@@ -296,7 +296,7 @@ const TranslationDiffViewer = ({
     diffResult.forEach((part) => {
       const value = part.value;
       if (part.removed) {
-        oldHighlighted += `<span style="background-color: rgba(239, 68, 68, 0.2); text-decoration: line-through; padding: 2px 4px; border-radius: 3px;">${escapeHtml(value)}</span>`;
+        oldHighlighted += `<span style="background-color: rgba(239, 68, 68, 0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(value)}</span>`;
       } else if (part.added) {
         newHighlighted += `<span style="background-color: rgba(34, 197, 94, 0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(value)}</span>`;
       } else {
@@ -604,7 +604,6 @@ const TranslationDiffViewer = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ 
               backgroundColor: 'rgba(239, 68, 68, 0.2)',
-              textDecoration: 'line-through',
               padding: '2px 6px',
               borderRadius: '3px',
               fontSize: '11px'
@@ -1001,7 +1000,6 @@ const TranslationDiffViewer = ({
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ 
                     backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                    textDecoration: 'line-through',
                     padding: '2px 6px',
                     borderRadius: '3px',
                     fontSize: '12px'
