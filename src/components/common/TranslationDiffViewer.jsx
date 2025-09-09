@@ -72,6 +72,56 @@ const TranslationDiffViewer = ({
     }, 10);
   };
 
+  // 간단한 inline diff 생성 함수 (원본 형식 완전 유지)
+  const createSimpleInlineDiff = (oldText, newText) => {
+    if (!oldText && !newText) return '';
+    
+    const safeOldText = oldText || '';
+    const safeNewText = newText || '';
+    
+    // 동일한 경우
+    if (safeOldText === safeNewText) {
+      return `<pre class="inline-unchanged">${escapeHtml(safeOldText)}</pre>`;
+    }
+    
+    // 줄 단위로 diff 계산 (원본 형식 유지)
+    const diffResult = diffLines(safeOldText, safeNewText);
+    
+    let html = '';
+    diffResult.forEach(part => {
+      // 줄바꿈을 포함한 원본 그대로 유지
+      const value = part.value;
+      
+      if (part.removed) {
+        // 각 줄을 개별적으로 처리하여 줄바꿈 유지
+        const lines = value.split('\n');
+        lines.forEach((line, index) => {
+          // 마지막 빈 줄만 제외하고, 중간의 빈 줄은 유지
+          if (index === lines.length - 1 && line === '' && lines.length > 1) return;
+          html += `<div class="inline-removed">- ${escapeHtml(line || ' ')}</div>`;
+        });
+      } else if (part.added) {
+        // 각 줄을 개별적으로 처리하여 줄바꿈 유지
+        const lines = value.split('\n');
+        lines.forEach((line, index) => {
+          // 마지막 빈 줄만 제외하고, 중간의 빈 줄은 유지
+          if (index === lines.length - 1 && line === '' && lines.length > 1) return;
+          html += `<div class="inline-added">+ ${escapeHtml(line || ' ')}</div>`;
+        });
+      } else {
+        // 변경되지 않은 부분도 줄바꿈 유지
+        const lines = value.split('\n');
+        lines.forEach((line, index) => {
+          // 마지막 빈 줄만 제외하고, 중간의 빈 줄은 유지
+          if (index === lines.length - 1 && line === '' && lines.length > 1) return;
+          html += `<div class="inline-unchanged">${escapeHtml(line || ' ')}</div>`;
+        });
+      }
+    });
+    
+    return html;
+  };
+
   // 양방향 스크롤 핸들러들
   const handleLeftScroll = () => {
     if (!isSyncEnabled) return;
@@ -117,8 +167,57 @@ const TranslationDiffViewer = ({
 
   // 차이점 분석 함수
   const analyzeDifferences = (oldText, newText, mode) => {
-    if (!oldText || !newText) return { oldHighlighted: oldText, newHighlighted: newText };
+    if (!oldText && !newText) {
+      return { 
+        oldHighlighted: '', 
+        newHighlighted: '', 
+        inlineHighlighted: '',
+        isIdentical: true 
+      };
+    }
+
+    if (!oldText) {
+      return { 
+        oldHighlighted: '', 
+        newHighlighted: `<span style="background-color: rgba(34, 197, 94, 0.2); padding: 2px 4px; border-radius: 3px;">${escapeHtml(newText)}</span>`,
+        inlineHighlighted: createSimpleInlineDiff('', newText),
+        isIdentical: false
+      };
+    }
+
+    if (!newText) {
+      return { 
+        oldHighlighted: `<span style="background-color: rgba(239, 68, 68, 0.2); text-decoration: line-through; padding: 2px 4px; border-radius: 3px;">${escapeHtml(oldText)}</span>`, 
+        newHighlighted: '',
+        inlineHighlighted: createSimpleInlineDiff(oldText, ''),
+        isIdentical: false
+      };
+    }
+
+    const isIdentical = oldText === newText;
     
+    if (isIdentical) {
+      return {
+        oldHighlighted: escapeHtml(oldText),
+        newHighlighted: escapeHtml(newText),
+        inlineHighlighted: createSimpleInlineDiff(oldText, newText),
+        isIdentical: true
+      };
+    }
+
+    // inline 모드 처리 (간단한 방식)
+    if (mode === 'inline') {
+      const inlineHTML = createSimpleInlineDiff(oldText, newText);
+      
+      return {
+        oldHighlighted: escapeHtml(oldText),
+        newHighlighted: escapeHtml(newText),
+        inlineHighlighted: inlineHTML,
+        isIdentical: false
+      };
+    }
+
+    // 기존 좌우 분할 모드 처리
     let diffResult;
     switch (mode) {
       case 'lines':
@@ -149,7 +248,12 @@ const TranslationDiffViewer = ({
       }
     });
 
-    return { oldHighlighted, newHighlighted };
+    return { 
+      oldHighlighted, 
+      newHighlighted, 
+      inlineHighlighted: '',
+      isIdentical: false
+    };
   };
 
   // 차이점 분석 결과
@@ -341,6 +445,21 @@ const TranslationDiffViewer = ({
             >
               글자별
             </button>
+            <button
+              onClick={() => setViewMode('inline')}
+              style={{
+                padding: '4px 8px',
+                fontSize: '11px',
+                border: 'none',
+                borderRadius: '4px',
+                backgroundColor: viewMode === 'inline' ? designTokens.colors.primary : 'transparent',
+                color: viewMode === 'inline' ? 'white' : designTokens.colors.text.muted,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              인라인
+            </button>
           </div>
         </div>
 
@@ -436,47 +555,102 @@ const TranslationDiffViewer = ({
           display: 'flex',
           minHeight: '200px'
         }}>
-          <div 
-            ref={leftPanelRef}
-            style={{
-              width: '50%',
-              padding: '16px',
-              borderRight: `1px solid ${designTokens.colors.border.light}`,
-              fontFamily: getFontFamily(targetLanguage),
-              fontSize: '14px',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'keep-all',
-              backgroundColor: '#fafbfc',
-              overflow: 'auto',
-              maxHeight: '600px'
-            }}
-            onScroll={handleLeftScroll}
-            title="양방향 동기화 - 여기서 스크롤해도 오른쪽이 따라움"
-            dangerouslySetInnerHTML={{
-              __html: diffAnalysis.oldHighlighted || '기본 번역문이 없습니다.'
-            }}
-          />
-          <div 
-            ref={rightPanelRef}
-            style={{
-              width: '50%',
-              padding: '16px',
-              fontFamily: getFontFamily(targetLanguage),
-              fontSize: '14px',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'keep-all',
+          {diffAnalysis.isIdentical ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              padding: '40px 20px',
               backgroundColor: '#f8fff9',
-              overflow: 'auto',
-              maxHeight: '600px'
-            }}
-            onScroll={handleRightScroll}
-            title="양방향 동기화 - 여기서 스크롤해도 왼쪽이 따라움"
-            dangerouslySetInnerHTML={{
-              __html: diffAnalysis.newHighlighted || '프롬프트 결과가 없습니다.'
-            }}
-          />
+              color: designTokens.colors.text.muted
+            }}>
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '16px',
+                color: '#22c55e'
+              }}>
+                ✓
+              </div>
+              <div style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+                color: designTokens.colors.text.primary
+              }}>
+                번역문이 동일합니다
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: designTokens.colors.text.muted
+              }}>
+                기본 번역문과 프롬프트 결과가 완전히 일치합니다.
+              </div>
+            </div>
+          ) : viewMode === 'inline' ? (
+            /* inline 모드: 간단한 diff 표시 */
+            <div 
+              style={{
+                width: '100%',
+                padding: '16px',
+                fontFamily: getFontFamily(targetLanguage),
+                fontSize: '14px',
+                lineHeight: '1.8',
+                backgroundColor: '#fafbfc',
+                overflow: 'auto',
+                maxHeight: '600px'
+              }}
+              dangerouslySetInnerHTML={{
+                __html: diffAnalysis.inlineHighlighted || '<div style="color: #6b7280; text-align: center; padding: 20px;">비교할 내용이 없습니다.</div>'
+              }}
+            />
+          ) : (
+            /* 기존 좌우 분할 모드 */
+            <>
+              <div 
+                ref={leftPanelRef}
+                style={{
+                  width: '50%',
+                  padding: '16px',
+                  borderRight: `1px solid ${designTokens.colors.border.light}`,
+                  fontFamily: getFontFamily(targetLanguage),
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'keep-all',
+                  backgroundColor: '#fafbfc',
+                  overflow: 'auto',
+                  maxHeight: '600px'
+                }}
+                onScroll={handleLeftScroll}
+                title="양방향 동기화 - 여기서 스크롤해도 오른쪽이 따라움"
+                dangerouslySetInnerHTML={{
+                  __html: diffAnalysis.oldHighlighted || '기본 번역문이 없습니다.'
+                }}
+              />
+              <div 
+                ref={rightPanelRef}
+                style={{
+                  width: '50%',
+                  padding: '16px',
+                  fontFamily: getFontFamily(targetLanguage),
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'keep-all',
+                  backgroundColor: '#f8fff9',
+                  overflow: 'auto',
+                  maxHeight: '600px'
+                }}
+                onScroll={handleRightScroll}
+                title="양방향 동기화 - 여기서 스크롤해도 왼쪽이 따라움"
+                dangerouslySetInnerHTML={{
+                  __html: diffAnalysis.newHighlighted || '프롬프트 결과가 없습니다.'
+                }}
+              />
+            </>
+          )}
         </div>
 
       </div>
@@ -485,6 +659,40 @@ const TranslationDiffViewer = ({
 
   return (
     <div>
+      <style>{`
+        .inline-unchanged {
+          margin: 0;
+          padding: 2px 8px;
+          line-height: 1.6;
+          border-left: 3px solid transparent;
+          min-height: 1.6em;
+          white-space: pre-wrap;
+        }
+        
+        .inline-removed {
+          background-color: rgba(239, 68, 68, 0.1);
+          border-left: 3px solid #ef4444;
+          margin: 0;
+          padding: 2px 8px;
+          line-height: 1.6;
+          color: #b91c1c;
+          font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+          min-height: 1.6em;
+          white-space: pre-wrap;
+        }
+        
+        .inline-added {
+          background-color: rgba(34, 197, 94, 0.1);
+          border-left: 3px solid #22c55e;
+          margin: 0;
+          padding: 2px 8px;
+          line-height: 1.6;
+          color: #166534;
+          font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+          min-height: 1.6em;
+          white-space: pre-wrap;
+        }
+      `}</style>
       {renderCustomSplitView()}
 
       {/* 전체화면 모달 */}
@@ -605,6 +813,21 @@ const TranslationDiffViewer = ({
                   }}
                 >
                   글자별
+                </button>
+                <button
+                  onClick={() => setViewMode('inline')}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '13px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: viewMode === 'inline' ? designTokens.colors.primary : 'transparent',
+                    color: viewMode === 'inline' ? 'white' : designTokens.colors.text.muted,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  인라인
                 </button>
               </div>
               
@@ -760,75 +983,110 @@ const TranslationDiffViewer = ({
                     backgroundColor: designTokens.colors.background.secondary,
                     borderBottom: `1px solid ${designTokens.colors.border.light}`
                   }}>
-                    <div style={{
-                      width: '50%',
-                      padding: '16px 20px',
-                      textAlign: 'center',
-                      fontWeight: '600',
-                      fontSize: '16px',
-                      borderRight: `1px solid ${designTokens.colors.border.light}`,
-                      color: designTokens.colors.text.primary
-                    }}>
-                      기본 번역문
-                    </div>
-                    <div style={{
-                      width: '50%',
-                      padding: '16px 20px',
-                      textAlign: 'center',
-                      fontWeight: '600',
-                      fontSize: '16px',
-                      color: designTokens.colors.text.primary
-                    }}>
-                      프롬프트 결과
-                    </div>
+                    {viewMode === 'inline' ? (
+                      /* inline 모드 헤더 */
+                      <div style={{
+                        width: '100%',
+                        padding: '16px 20px',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        color: designTokens.colors.text.primary
+                      }}>
+                        통합 번역문 비교
+                      </div>
+                    ) : (
+                      /* 좌우 분할 모드 헤더 */
+                      <>
+                        <div style={{
+                          width: '50%',
+                          padding: '16px 20px',
+                          textAlign: 'center',
+                          fontWeight: '600',
+                          fontSize: '16px',
+                          borderRight: `1px solid ${designTokens.colors.border.light}`,
+                          color: designTokens.colors.text.primary
+                        }}>
+                          기본 번역문
+                        </div>
+                        <div style={{
+                          width: '50%',
+                          padding: '16px 20px',
+                          textAlign: 'center',
+                          fontWeight: '600',
+                          fontSize: '16px',
+                          color: designTokens.colors.text.primary
+                        }}>
+                          프롬프트 결과
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* 전체화면 내용 */}
-                  <div style={{
-                    display: 'flex',
-                    flex: 1,
-                    overflow: 'auto'
-                  }}>
-                    <div 
-                      ref={leftFullscreenRef}
-                      style={{
-                        width: '50%',
-                        padding: '20px',
-                        borderRight: `1px solid ${designTokens.colors.border.light}`,
-                        fontFamily: getFontFamily(targetLanguage),
-                        fontSize: '16px',
-                        lineHeight: '1.8',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'keep-all',
-                        backgroundColor: '#fafbfc',
-                        overflow: 'auto'
-                      }}
-                      onScroll={handleLeftFullscreenScroll}
-                      title="양방향 동기화 - 여기서 스크롤해도 오른쪽이 따라움"
-                      dangerouslySetInnerHTML={{
-                        __html: diffAnalysis.oldHighlighted || '기본 번역문이 없습니다.'
-                      }}
+                  {viewMode === 'inline' ? (
+                    /* inline 모드 전체화면 내용 */
+                    <div style={{
+                      flex: 1,
+                      padding: '24px',
+                      fontFamily: getFontFamily(targetLanguage),
+                      fontSize: '16px',
+                      lineHeight: '1.8',
+                      backgroundColor: '#fafbfc',
+                      overflow: 'auto'
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: diffAnalysis.inlineHighlighted || '<div style="color: #6b7280; text-align: center; padding: 20px;">비교할 내용이 없습니다.</div>'
+                    }}
                     />
-                    <div 
-                      ref={rightFullscreenRef}
-                      style={{
-                        width: '50%',
-                        padding: '20px',
-                        fontFamily: getFontFamily(targetLanguage),
-                        fontSize: '16px',
-                        lineHeight: '1.8',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'keep-all',
-                        backgroundColor: '#f8fff9',
-                        overflow: 'auto'
-                      }}
-                      onScroll={handleRightFullscreenScroll}
-                      title="양방향 동기화 - 여기서 스크롤해도 왼쪽이 따라움"
-                      dangerouslySetInnerHTML={{
-                        __html: diffAnalysis.newHighlighted || '프롬프트 결과가 없습니다.'
-                      }}
-                    />
-                  </div>
+                  ) : (
+                    /* 기존 좌우 분할 모드 */
+                    <div style={{
+                      display: 'flex',
+                      flex: 1,
+                      overflow: 'auto'
+                    }}>
+                      <div 
+                        ref={leftFullscreenRef}
+                        style={{
+                          width: '50%',
+                          padding: '20px',
+                          borderRight: `1px solid ${designTokens.colors.border.light}`,
+                          fontFamily: getFontFamily(targetLanguage),
+                          fontSize: '16px',
+                          lineHeight: '1.8',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'keep-all',
+                          backgroundColor: '#fafbfc',
+                          overflow: 'auto'
+                        }}
+                        onScroll={handleLeftFullscreenScroll}
+                        title="양방향 동기화 - 여기서 스크롤해도 오른쪽이 따라움"
+                        dangerouslySetInnerHTML={{
+                          __html: diffAnalysis.oldHighlighted || '기본 번역문이 없습니다.'
+                        }}
+                      />
+                      <div 
+                        ref={rightFullscreenRef}
+                        style={{
+                          width: '50%',
+                          padding: '20px',
+                          fontFamily: getFontFamily(targetLanguage),
+                          fontSize: '16px',
+                          lineHeight: '1.8',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'keep-all',
+                          backgroundColor: '#f8fff9',
+                          overflow: 'auto'
+                        }}
+                        onScroll={handleRightFullscreenScroll}
+                        title="양방향 동기화 - 여기서 스크롤해도 왼쪽이 따라움"
+                        dangerouslySetInnerHTML={{
+                          __html: diffAnalysis.newHighlighted || '프롬프트 결과가 없습니다.'
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
