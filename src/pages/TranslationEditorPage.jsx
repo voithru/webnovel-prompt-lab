@@ -8,6 +8,7 @@ import PromptBubble from '../components/common/PromptBubble'
 import AppLayout from '../components/layout/AppLayout'
 import BottomActionBar from '../components/common/BottomActionBar'
 import PromptGuideModal from '../components/common/PromptGuideModal'
+import ContextInfoModal from '../components/common/ContextInfoModal'
 import TranslationDiffViewer from '../components/common/TranslationDiffViewer'
 
 import styles from '../styles/pages/TranslationEditorPage.module.css'
@@ -66,6 +67,11 @@ const TranslationEditorPage = () => {
   const [guideContent, setGuideContent] = useState('')
   const [isGuideLoading, setIsGuideLoading] = useState(false)
   const [hasGuidePrompt, setHasGuidePrompt] = useState(false)
+  
+  // 맥락 정보 모달 관련 state
+  const [isContextModalOpen, setIsContextModalOpen] = useState(false)
+  const [contextContent, setContextContent] = useState('')
+  const [isContextLoading, setIsContextLoading] = useState(false)
   
   // 프롬프트 결과 번역문 표시 모드: 'result' 또는 'diff'
   const [promptResultMode, setPromptResultMode] = useState('result')
@@ -666,6 +672,55 @@ const TranslationEditorPage = () => {
   const handleCloseGuideModal = () => {
     setIsGuideModalOpen(false)
     setGuideContent('')
+  }
+
+  // 맥락 정보 모달 열기
+  const handleOpenContextModal = async () => {
+    setIsContextModalOpen(true)
+    setIsContextLoading(true)
+
+    try {
+      // taskDetail에서 맥락 정보 가져오기
+      let contextAnalysisText = taskDetail?.contextAnalysisText
+
+      // taskDetail에 없으면 캐시에서 가져오기
+      if (!contextAnalysisText) {
+        contextAnalysisText = localStorage.getItem(`cached_context_${taskId}`)
+      }
+
+      // 여전히 없으면 taskDetail 새로 로드 시도
+      if (!contextAnalysisText && taskId) {
+        console.log('🔍 Step 1: 맥락 정보 없음, taskDetail 새로 로드 시도')
+        const googleSheetsService = getGoogleSheetsService()
+        const detail = await googleSheetsService.getProjectDetail(taskId)
+        
+        if (detail?.contextAnalysisText) {
+          contextAnalysisText = detail.contextAnalysisText
+          // 캐시에 저장
+          localStorage.setItem(`cached_context_${taskId}`, detail.contextAnalysisText)
+          console.log('✅ Step 1: 맥락 정보 새로 로드 완료:', contextAnalysisText.length, '글자')
+        }
+      }
+
+      if (contextAnalysisText) {
+        setContextContent(contextAnalysisText)
+        console.log('✅ Step 1: 맥락 정보 모달 표시:', contextAnalysisText.length, '글자')
+      } else {
+        setContextContent('')
+        console.warn('⚠️ Step 1: 맥락 정보를 찾을 수 없습니다')
+      }
+    } catch (error) {
+      console.error('❌ Step 1: 맥락 정보 로드 실패:', error)
+      setContextContent('')
+    } finally {
+      setIsContextLoading(false)
+    }
+  }
+
+  // 맥락 정보 모달 닫기
+  const handleCloseContextModal = () => {
+    setIsContextModalOpen(false)
+    setContextContent('')
   }
 
   // 자동 저장 함수 (프롬프트 입력 시 호출)
@@ -1618,23 +1673,39 @@ const TranslationEditorPage = () => {
             </div>
           </div>
 
-          {/* 프롬프트 가이드 버튼 - 작품에 관계없이 항상 표시 */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="white"
-                size="small"
-                style="solid"
-                onClick={handleOpenGuideModal}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10,9 9,9 8,9"/>
-                </svg>
-                프롬프트 작성 예시
-              </Button>
+          {/* 맥락 정보 및 프롬프트 가이드 버튼들 */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            {/* 맥락 정보 버튼 */}
+            <Button
+              variant="green"
+              size="small"
+              style="solid"
+              onClick={handleOpenContextModal}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <path d="M12 17h.01"/>
+              </svg>
+              맥락 정보
+            </Button>
+            
+            {/* 프롬프트 가이드 버튼 */}
+            <Button
+              variant="white"
+              size="small"
+              style="solid"
+              onClick={handleOpenGuideModal}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+              </svg>
+              프롬프트 작성 예시
+            </Button>
           </div>
         </div>
         
@@ -2276,6 +2347,14 @@ const TranslationEditorPage = () => {
           onClose={handleCloseGuideModal}
           guideContent={guideContent}
           isLoading={isGuideLoading}
+        />
+
+        {/* 맥락 정보 모달 */}
+        <ContextInfoModal
+          isOpen={isContextModalOpen}
+          onClose={handleCloseContextModal}
+          contextContent={contextContent}
+          isLoading={isContextLoading}
         />
 
       </div>
